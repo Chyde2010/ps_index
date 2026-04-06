@@ -1,0 +1,8 @@
+repo,sample_phi,corp_commits,active_months,corp_ratio,pillar
+tensorflow/tensorflow,0.340,80344,87,0.55,AI/ML infrastructure
+google/perfetto,0.285,68964,87,0.92,Android/Chrome observability
+google/jax,0.210,29992,87,0.88,AI/ML research framework
+google/skia,0.155,26439,87,0.67,Android/Chrome/Flutter graphics
+GoogleCloudPlatform/k8s-config-connector,0.350,8950,85,0.67,Google Cloud infrastructure
+google/gvisor,0.275,9015,87,0.90,Google Cloud security
+GoogleCloudPlatform/magic-modules,0.445,6814,87,0.54,Google Cloud service velocity

@@ -1,0 +1,15 @@
+.env
+secrets.py
+*_token.txt
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+.eggs/
+.ipynb_checkpoints/
+data/raw/
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

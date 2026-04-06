@@ -1,0 +1,8 @@
+repo,sample_phi,corp_commits,active_months,corp_ratio,pillar
+elastic/kibana,0.425,40747,87,0.524,Core Platform/UI
+elastic/elasticsearch-specification,0.365,1195,70,0.33,Platform Standards
+elastic/elasticsearch,0.335,22605,87,0.434,Core Platform/Search
+elastic/logstash,0.325,618,87,0.26,Data Ingestion
+elastic/apm-server,0.310,1412,73,0.28,Observability
+elastic/cloud-on-k8s,0.295,1308,87,0.26,Cloud Infrastructure
+elastic/elastic-agent,0.285,2003,59,0.40,Observability/Security

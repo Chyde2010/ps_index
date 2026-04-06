@@ -1,0 +1,8 @@
+repo,sample_phi,corp_commits,active_months,corp_ratio,pillar
+mongodb/mongo,0.335,38623,87,0.731,Core Database
+mongodb/libmongocrypt,0.405,865,87,0.51,Security
+mongodb/mongo-java-driver,0.350,1293,87,0.58,Platform/Drivers
+mongodb/mongo-c-driver,0.310,881,87,0.44,Platform/Drivers
+mongodb/node-mongodb-native,0.225,1889,85,0.60,Platform/Drivers
+mongodb/specifications,0.205,749,87,0.45,Platform Standards
+mongodb/mongodb-atlas-cli,0.210,1352,74,0.33,Atlas Platform

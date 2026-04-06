@@ -1,0 +1,7 @@
+repo,sample_phi,corp_commits,active_months,corp_ratio,pillar
+snowflakedb/snowpark-python,0.495,2283,60,0.78,Data Engineering/AI
+snowflakedb/snowflake-jdbc,0.365,1018,87,0.55,Platform Connectivity
+snowflakedb/snowflake-ingest-java,0.360,684,76,0.87,Data Ingestion
+snowflakedb/gosnowflake,0.310,577,77,0.57,Platform Connectivity
+snowflakedb/snowflake-connector-python,0.275,954,82,0.65,Platform Connectivity
+snowflakedb/snowflake-connector-net,0.220,355,74,0.48,Platform Connectivity

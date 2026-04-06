@@ -1,0 +1,8 @@
+repo,sample_phi,corp_commits,active_months,corp_ratio,pillar
+facebook/Ax,0.415,4856,78,0.97,AI/ML
+facebook/hermes,0.425,8804,81,0.975,Mobile Platform
+facebookresearch/faiss,0.355,1159,87,0.69,AI/ML
+pytorch/FBGEMM,0.340,4444,87,0.94,AI/ML
+facebookincubator/fizz,0.310,4710,80,0.94,Core Infrastructure
+facebook/react-native,0.290,20080,87,0.807,Mobile Platform
+facebook/rocksdb,0.260,3603,74,0.72,Core Infrastructure

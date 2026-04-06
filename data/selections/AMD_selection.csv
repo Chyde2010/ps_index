@@ -1,0 +1,7 @@
+repo,sample_phi,corp_commits,active_months,corp_ratio,pillar
+ROCm/HIP,0.420,2378,87,0.61,GPU programming interface
+ROCm/ROCR-Runtime,0.380,2028,82,0.97,Core GPU compute runtime
+ROCm/rccl,0.375,652,83,0.34,Multi-GPU communications
+ROCm/aomp,0.310,4680,86,0.94,OpenMP GPU compiler
+ROCm/AMDMIGraphX,0.245,1739,82,0.35,AI graph inference engine
+ROCm/MIOpen,0.145,1032,81,0.33,Deep learning primitives

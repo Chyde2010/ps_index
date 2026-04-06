@@ -1,0 +1,6 @@
+repo,sample_phi,corp_commits,active_months,corp_ratio,pillar
+forcedotcom/source-deploy-retrieve,0.860,1369,73,0.65,Platform/DevOps
+forcedotcom/sfdx-core,0.485,1774,87,0.64,Platform/Developer
+forcedotcom/code-analyzer,0.375,1249,75,0.44,Platform/Developer
+forcedotcom/source-tracking,0.335,1247,70,0.68,Platform/DevOps
+salesforce/lwc,0.320,1207,87,0.44,Core Product/UI

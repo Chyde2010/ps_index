@@ -1,0 +1,7 @@
+repo,sample_phi,corp_commits,active_months,corp_ratio,pillar
+aws/eks-distro,0.870,1650,65,0.42,Container/Kubernetes platform
+aws/aws-ofi-nccl,0.405,1163,79,0.95,AI/ML network infrastructure
+aws/amazon-ecs-agent,0.385,1837,87,0.66,Container compute runtime
+boto/boto3,0.665,5327,87,0.92,Developer platform
+aws/aws-cli,0.325,6084,87,0.84,AWS management interface
+aws/s2n-tls,0.280,1692,87,0.51,Security infrastructure
