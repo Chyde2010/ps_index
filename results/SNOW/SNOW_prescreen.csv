@@ -1,0 +1,7 @@
+repo,n4_phi,sample_fpp,n_sampled,passes
+snowflakedb/snowpark-python,0.495,0.3,100,True
+snowflakedb/snowflake-jdbc,0.365,0.18,100,True
+snowflakedb/snowflake-ingest-java,0.36,0.18,100,True
+snowflakedb/gosnowflake,0.31,0.17,100,True
+snowflakedb/snowflake-connector-python,0.275,0.15,100,True
+snowflakedb/snowflake-connector-net,0.22,0.16,100,True
