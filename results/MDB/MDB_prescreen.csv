@@ -1,0 +1,8 @@
+repo,n4_phi,sample_fpp,n_sampled,passes,pillar
+mongodb/mongo,0.335,0.25,100,True,Core Database
+mongodb/libmongocrypt,0.405,0.13,100,True,Security
+mongodb/mongo-java-driver,0.35,0.18,100,True,Platform/Drivers
+mongodb/mongo-c-driver,0.31,0.18,100,True,Platform/Drivers
+mongodb/node-mongodb-native,0.225,0.3,100,True,Platform/Drivers
+mongodb/specifications,0.205,0.09,100,True,Platform Standards
+mongodb/mongodb-atlas-cli,0.21,0.18,100,True,Atlas Platform
