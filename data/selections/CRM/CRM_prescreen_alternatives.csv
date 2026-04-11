@@ -1,0 +1,9 @@
+repo,pillar,n4_phi,sample_fp_phi,structural,n_corp,viable
+forcedotcom/cli,Platform/Developer,0.445,0.02,2,100,False
+salesforce/tough-cookie,Core Infrastructure,0.41,0.0152,1,66,False
+forcedotcom/salesforcedx-vscode,Platform/Developer,0.385,0.02,2,100,False
+salesforce/sa11y,Platform/Developer,0.355,0.04,4,100,False
+forcedotcom/lightning-language-server,Core Product/UI,0.34,0.02,2,100,False
+salesforce/eslint-plugin-lwc,Core Product/UI,0.315,0.1053,8,76,True
+forcedotcom/sfdx-scanner,Platform/Developer,0.29,0.15,15,100,True
+salesforce/lwc-dev-server,Platform/Developer,0.275,0.0,0,0,False

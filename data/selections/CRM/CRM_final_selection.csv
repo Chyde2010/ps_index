@@ -1,0 +1,6 @@
+repo,pillar,sample_fp_phi,source
+salesforce/lwc,Core Product/UI,0.24,locked_confirmed
+forcedotcom/code-analyzer,Platform/Developer,0.15,locked_confirmed
+forcedotcom/sfdx-scanner,Platform/Developer,0.15,amendment
+forcedotcom/source-deploy-retrieve,Platform/DevOps,0.09,locked_confirmed
+forcedotcom/sfdx-core,Platform/Developer,0.07,locked_confirmed
