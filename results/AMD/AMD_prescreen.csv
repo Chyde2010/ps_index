@@ -1,0 +1,7 @@
+repo,n4_phi,sample_fpp,n_sampled,passes,pillar
+ROCm/HIP,0.285,0.08,100,True,GPU Runtime
+ROCm/ROCR-Runtime,0.31,0.08,100,True,GPU Runtime
+ROCm/rccl,0.34,0.11,100,True,AI/ML Infrastructure
+ROCm/aomp,0.255,0.09,100,True,Compiler
+ROCm/AMDMIGraphX,0.375,0.2,100,True,AI/ML Inference
+ROCm/MIOpen,0.32,0.05,100,True,AI/ML Libraries
