@@ -1,0 +1,7 @@
+repo,n4_phi,sample_fpp,n_sampled,passes,pillar
+twilio/twilio-python,0.385,0.41,100,True,API Library/Python
+twilio/twilio-node,0.36,0.45,100,True,API Library/Node
+twilio/twilio-go,0.31,0.44,100,True,API Library/Go
+twilio/twilio-cli,0.295,0.01,100,False,Developer Tooling
+twilio/sendgrid-nodejs,0.275,0.0,0,False,Email API
+twilio/twilio-java,0.34,0.47,100,True,API Library/Java
