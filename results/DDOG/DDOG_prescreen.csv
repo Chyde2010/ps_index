@@ -1,0 +1,6 @@
+repo,n4_phi,sample_fpp,n_sampled,passes,pillar
+DataDog/datadog-agent,0.31,0.22,100,True,Core Platform
+DataDog/integrations-core,0.355,0.04,100,False,Integrations
+DataDog/dd-trace-py,0.295,0.17,100,True,APM/Tracing
+DataDog/dd-trace-go,0.28,0.01,100,False,APM/Tracing
+DataDog/datadog-operator,0.265,0.09,100,True,Cloud Platform
