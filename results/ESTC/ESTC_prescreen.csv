@@ -1,0 +1,8 @@
+repo,n4_phi,sample_fpp,n_sampled,passes,pillar
+elastic/elasticsearch,0.31,0.21,100,True,Core Search
+elastic/kibana,0.285,0.13,100,True,Visualisation
+elastic/logstash,0.26,0.07,100,True,Data Pipeline
+elastic/apm-server,0.34,0.04,100,False,Observability
+elastic/cloud-on-k8s,0.295,0.11,100,True,Cloud Platform
+elastic/elastic-agent,0.315,0.15,100,True,Observability
+elastic/elasticsearch-specification,0.23,0.15,100,True,API Standards
