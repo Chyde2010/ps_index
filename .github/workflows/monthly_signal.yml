@@ -8,6 +8,9 @@ on:
 jobs:
   compute-signals:
     runs-on: ubuntu-latest
+    concurrency:
+      group: ps-index-signals
+      cancel-in-progress: false
 
     steps:
       - name: Checkout repository
@@ -15,6 +18,7 @@ jobs:
         with:
           token: ${{ secrets.PS_INDEX_PAT }}
           fetch-depth: 0
+          ref: main
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -35,12 +39,10 @@ jobs:
         run: |
           git config user.email "github-actions@github.com"
           git config user.name "Ps Index Bot"
-          git fetch origin main
-          git rebase origin/main
           git add live_track_record/signals/
           if git diff --staged --quiet; then
             echo "No new signal data to commit"
             exit 0
           fi
           git commit -m "Auto: Monthly Ps signal reading $(date +'%Y-%m-%d')"
-          git push origin main
+          git push --force-with-lease origin main
