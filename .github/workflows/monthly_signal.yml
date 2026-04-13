@@ -8,17 +8,15 @@ on:
 jobs:
   compute-signals:
     runs-on: ubuntu-latest
-    concurrency:
-      group: ps-index-signals
-      cancel-in-progress: false
+
+    permissions:
+      contents: write
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
           token: ${{ secrets.PS_INDEX_PAT }}
-          fetch-depth: 0
-          ref: main
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -35,14 +33,11 @@ jobs:
         run: |
           python live_track_record/scripts/monthly_signal.py
 
-      - name: Commit and push signal readings
-        run: |
-          git config user.email "github-actions@github.com"
-          git config user.name "Ps Index Bot"
-          git add live_track_record/signals/
-          if git diff --staged --quiet; then
-            echo "No new signal data to commit"
-            exit 0
-          fi
-          git commit -m "Auto: Monthly Ps signal reading $(date +'%Y-%m-%d')"
-          git push --force-with-lease origin main
+      - name: Commit signal readings
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "Auto: Monthly Ps signal reading"
+          file_pattern: "live_track_record/signals/*"
+          commit_user_email: github-actions@github.com
+          commit_user_name: Ps Index Bot
+          push_options: '--force'
