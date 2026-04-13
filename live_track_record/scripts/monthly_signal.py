@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 """
-Ps Index Monthly Signal Computation
-Runs on the first of each month via GitHub Actions.
-Computes current Ps Z-score for each signal company
-and commits the result to the repository.
+Ps Index Monthly Signal Computation -- v2
+Corrected normalisation using phi calibration factor.
+The calibration factor adjusts keyword-only phi to approximate
+the churn-adjusted phi used in the backtest, enabling valid
+normalisation against the historical ps_raw series.
 """
 
 import os
@@ -19,11 +20,10 @@ from scipy.stats import entropy as scipy_entropy
 GITHUB_TOKEN = os.environ.get('PS_INDEX_PAT', '')
 HEADERS = {
     'Authorization': f'token {GITHUB_TOKEN}',
-    'Accept': 'application/vnd.github.v3+json'
+    'Accept':        'application/vnd.github.v3+json'
 }
 
 HC_THRESHOLD = 1.5
-CHURN_FLOOR  = 100
 
 STRUCTURAL_KEYWORDS = [
     'feature', 'api', 'add', 'new', 'implement', 'support',
@@ -41,7 +41,6 @@ MAINTENANCE_KEYWORDS = [
     'update hashes', 'deploy', 'release notes',
 ]
 
-# Signal companies -- repos and domains
 COMPANIES = {
     'MSFT': {
         'signal_regime': 'positive',
@@ -70,7 +69,6 @@ COMPANIES = {
         'domain': 'salesforce.com',
         'repos': [
             'salesforce/lwc',
-            'salesforce/einstein-platform',
             'forcedotcom/salesforcedx-vscode',
             'salesforce/CodeAnalyzer',
         ]
@@ -134,7 +132,7 @@ def api_get(url, params=None):
             print(f'Rate limit. Waiting {wait}s...')
             time.sleep(wait)
             continue
-        if resp.status_code not in [200]:
+        if resp.status_code != 200:
             return None
         return resp.json()
 
@@ -147,22 +145,48 @@ def compute_entropy_normalised(series, n_repos):
     H_max = math.log2(n_repos) if n_repos > 1 else 1.0
     return H / H_max if H_max > 0 else 0.0
 
+def load_normalisation(ticker):
+    """Load normalisation parameters from lookup file."""
+    lookup_path = 'live_track_record/data/normalisation_lookup.csv'
+    if not os.path.exists(lookup_path):
+        return None
+    df  = pd.read_csv(lookup_path)
+    row = df[df['ticker'] == ticker]
+    if len(row) == 0:
+        return None
+    return row.iloc[0].to_dict()
+
 def compute_live_ps(ticker, company_config):
     """
-    Compute the current month Ps Z-score for a company.
-    Uses the 90-day rolling window ending today.
-    Normalises against the historical Ps series from the
-    merged file stored in the repository.
+    Compute current month Ps Z-score.
+
+    Normalisation approach:
+    1. Fetch 90-day rolling commits from all repos
+    2. Classify by keyword (no churn fetch for rate limit reasons)
+    3. Apply phi calibration factor to approximate churn-adjusted phi
+    4. Compute ps_raw using calibrated phi
+    5. Normalise against historical ps_raw mean and std
     """
-    domain = company_config['domain']
-    repos  = company_config['repos']
+    domain  = company_config['domain']
+    repos   = company_config['repos']
+    n_repos = len(repos)
+
+    # Load normalisation parameters
+    norm = load_normalisation(ticker)
+    if norm is None:
+        print(f'  {ticker}: Normalisation lookup not found')
+        return None
+
+    ps_raw_mean    = norm['ps_raw_mean']
+    ps_raw_std     = norm['ps_raw_std']
+    phi_calibration = norm['phi_calibration']
 
     # 90-day window
     now          = datetime.now(timezone.utc)
     window_start = now - pd.Timedelta(days=90)
     since_str    = window_start.strftime('%Y-%m-%dT%H:%M:%SZ')
 
-    # Fetch commits from each repo for the 90-day window
+    # Fetch commits
     all_commits = []
     for repo in repos:
         url    = f'https://api.github.com/repos/{repo}/commits'
@@ -188,11 +212,11 @@ def compute_live_ps(ticker, company_config):
                 msg = ''
                 if c.get('commit') and c['commit'].get('message'):
                     msg = c['commit']['message']
+                kw = keyword_classify(msg)
                 all_commits.append({
                     'repo':    repo,
                     'is_corp': is_corp,
-                    'message': msg[:200],
-                    'kw_class': keyword_classify(msg),
+                    'kw_class': kw,
                 })
             if len(data) < 100:
                 break
@@ -203,55 +227,55 @@ def compute_live_ps(ticker, company_config):
         print(f'  {ticker}: No commits found')
         return None
 
-    df      = pd.DataFrame(all_commits)
-    corp    = df[df['is_corp']]
-    V       = len(corp)
-    struct  = corp[corp['kw_class'] == 'structural_candidate']
+    df     = pd.DataFrame(all_commits)
+    corp   = df[df['is_corp']]
+    V      = len(corp)
+    struct = corp[corp['kw_class'] == 'structural_candidate']
 
-    # For live computation we use keyword classification only
-    # without churn fetch -- churn fetch requires individual
-    # commit API calls which would exceed rate limits monthly.
-    # Live phi is therefore the keyword-only phi (no churn floor).
-    # This is documented as a live track record methodology note.
-    phi = len(struct) / V if V > 0 else 0.0
-    H   = compute_entropy_normalised(
-        struct['repo'], len(repos)) if len(struct) > 0 else 1.0
-    ps_raw = V * phi * (1 - H)
+    # Keyword-only phi
+    phi_kw = len(struct) / V if V > 0 else 0.0
 
-    # Load historical Ps series to normalise
-    hist_path = f'live_track_record/data/{ticker}_merged.csv'
-    if not os.path.exists(hist_path):
-        print(f'  {ticker}: Historical data not found')
-        return None
+    # Apply calibration factor to approximate churn-adjusted phi
+    # calibration = hist_phi_mean / prescreen_fpp
+    # phi_adj = phi_kw * calibration
+    phi_adj = phi_kw * phi_calibration
 
-    hist = pd.read_csv(hist_path)
-    hist_mean = hist['ps_raw'].mean() if 'ps_raw' in hist.columns else 0
-    hist_std  = hist['ps_raw'].std()  if 'ps_raw' in hist.columns else 1
+    # Entropy gap
+    H = compute_entropy_normalised(
+        struct['repo'], n_repos) if len(struct) > 0 else 1.0
 
-    # Normalise using historical mean and std
-    ps_zscore = ((ps_raw - hist_mean) / hist_std
-                 if hist_std > 0 else 0.0)
+    # Compute calibrated ps_raw
+    ps_raw_live = V * phi_adj * (1 - H)
+
+    # Normalise against historical distribution
+    ps_zscore = ((ps_raw_live - ps_raw_mean) / ps_raw_std
+                 if ps_raw_std > 0 else 0.0)
 
     return {
-        'ticker':          ticker,
-        'signal_regime':   company_config['signal_regime'],
-        'month':           now.strftime('%Y-%m'),
-        'date_committed':  now.strftime('%Y-%m-%d'),
-        'V':               V,
-        'phi':             round(phi, 4),
-        'H':               round(H, 4),
-        'entropy_gap':     round(1 - H, 4),
-        'ps_raw':          round(ps_raw, 4),
-        'ps_zscore':       round(ps_zscore, 4),
-        'high_conviction': ps_zscore >= HC_THRESHOLD,
-        'n_corp':          V,
-        'n_structural_kw': len(struct),
+        'date_committed':   now.strftime('%Y-%m-%d'),
+        'ticker':           ticker,
+        'signal_regime':    company_config['signal_regime'],
+        'month':            now.strftime('%Y-%m'),
+        'ps_zscore':        round(ps_zscore, 4),
+        'high_conviction':  ps_zscore >= HC_THRESHOLD,
+        'V':                V,
+        'phi_kw':           round(phi_kw, 4),
+        'phi_adj':          round(phi_adj, 4),
+        'phi_calibration':  round(phi_calibration, 4),
+        'H':                round(H, 4),
+        'entropy_gap':      round(1 - H, 4),
+        'ps_raw_live':      round(ps_raw_live, 4),
+        'ps_raw_mean':      round(ps_raw_mean, 4),
+        'ps_raw_std':       round(ps_raw_std, 4),
+        'n_corp':           V,
+        'n_structural_kw':  len(struct),
     }
 
 def main():
     print('=' * 60)
-    print('Ps Index Monthly Signal Computation')
+    print('Ps Index Monthly Signal Computation v2')
     print(f'Date: {datetime.now(timezone.utc).strftime("%Y-%m-%d")}')
+    print('Phi calibration applied to approximate churn floor.')
     print('=' * 60)
 
     results = []
@@ -260,49 +284,60 @@ def main():
         result = compute_live_ps(ticker, config)
         if result:
             results.append(result)
-            hc = 'HC' if result['high_conviction'] else ''
-            print(f'  Ps Z-score: {result["ps_zscore"]:.3f} '
+            hc = '*** HIGH CONVICTION ***' \
+                 if result['high_conviction'] else ''
+            print(f'  Ps Z-score  : {result["ps_zscore"]:>7.3f} '
                   f'({result["signal_regime"]}) {hc}')
             print(f'  V={result["V"]} '
-                  f'phi={result["phi"]:.3f} '
-                  f'entropy_gap={result["entropy_gap"]:.3f}')
+                  f'phi_kw={result["phi_kw"]:.3f} '
+                  f'phi_adj={result["phi_adj"]:.3f} '
+                  f'H={result["H"]:.3f}')
+            print(f'  ps_raw_live={result["ps_raw_live"]:.3f} '
+                  f'(hist mean={result["ps_raw_mean"]:.3f} '
+                  f'std={result["ps_raw_std"]:.3f})')
 
     if not results:
         print('ERROR: No results computed.')
         return
 
-    # Append to live signals file
+    # Save to live signals file
     signals_path = 'live_track_record/signals/live_signals.csv'
     new_df = pd.DataFrame(results)
 
     if os.path.exists(signals_path):
         existing = pd.read_csv(signals_path)
+        # Remove any existing reading for this month
+        existing = existing[
+            ~((existing['month'] == new_df['month'].iloc[0]) &
+              (existing['ticker'].isin(new_df['ticker'])))]
         combined = pd.concat([existing, new_df],
                               ignore_index=True)
-        combined = combined.drop_duplicates(
-            subset=['month', 'ticker'], keep='last')
     else:
         combined = new_df
 
     combined.to_csv(signals_path, index=False)
 
-    # Also save a monthly snapshot
-    month_str    = datetime.now(timezone.utc).strftime('%Y-%m')
+    # Monthly snapshot
+    month_str     = datetime.now(timezone.utc).strftime('%Y-%m')
     snapshot_path = (f'live_track_record/signals/'
                      f'snapshot_{month_str}.csv')
     new_df.to_csv(snapshot_path, index=False)
 
     print('\n' + '=' * 60)
-    print('SIGNAL SUMMARY')
+    print('MONTHLY SIGNAL SUMMARY')
     print('=' * 60)
+    print(f'{"Ticker":<6} {"Regime":<10} '
+          f'{"Ps Z":>8} {"HC":>5}')
+    print('-' * 32)
     for r in results:
-        hc = ' *** HIGH CONVICTION ***' if r['high_conviction'] else ''
-        print(f'  {r["ticker"]:<6} '
+        hc = 'YES' if r['high_conviction'] else 'no'
+        print(f'{r["ticker"]:<6} '
               f'{r["signal_regime"]:<10} '
-              f'Ps Z={r["ps_zscore"]:>7.3f}{hc}')
+              f'{r["ps_zscore"]:>8.3f} '
+              f'{hc:>5}')
 
-    print(f'\nResults saved to {signals_path}')
-    print(f'Snapshot saved to {snapshot_path}')
+    print(f'\nSaved to {signals_path}')
+    print(f'Snapshot: {snapshot_path}')
 
 if __name__ == '__main__':
     main()
