@@ -1,0 +1,6 @@
+repo,sample_fpp,n_sampled,passes,pillar
+cloudflare/workers-sdk,0.24,100,True,Developer Platform
+cloudflare/workerd,0.28,100,True,Core Runtime
+cloudflare/pingora,0.14,100,True,Network Infrastructure
+cloudflare/wrangler,0.15,100,True,Developer Platform
+cloudflare/cloudflared,0.17,100,True,Platform Connectivity

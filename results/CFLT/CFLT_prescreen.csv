@@ -1,0 +1,6 @@
+repo,sample_fpp,n_sampled,passes,pillar
+confluentinc/schema-registry,0.13,100,True,Data Governance
+confluentinc/ksql,0.0,100,False,Stream Processing
+confluentinc/confluent-kafka-python,0.06,100,True,Client Library
+confluentinc/confluent-kafka-go,0.09,100,True,Client Library
+confluentinc/kafka-rest,0.08,100,True,REST Proxy
