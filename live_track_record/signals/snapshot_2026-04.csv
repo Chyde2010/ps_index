@@ -1,7 +1,0 @@
-ticker,signal_regime,month,date_committed,V,phi,H,entropy_gap,ps_raw,ps_zscore,high_conviction,n_corp,n_structural_kw
-MSFT,positive,2026-04,2026-04-13,330,0.2,0.5148,0.4852,32.0261,2.3954,True,330,66
-AMZN,positive,2026-04,2026-04-13,324,0.3179,0.5403,0.4597,47.3478,47.3478,True,324,103
-CRM,positive,2026-04,2026-04-13,232,0.0517,0.0,1.0,12.0,12.0,True,232,12
-SNOW,positive,2026-04,2026-04-13,381,0.2992,0.9503,0.0497,5.661,5.661,True,381,114
-DDOG,negative,2026-04,2026-04-13,2346,0.3257,0.6619,0.3381,258.2863,258.2863,True,2346,764
-TWLO,negative,2026-04,2026-04-13,51,0.9804,0.8982,0.1018,5.0878,5.0878,True,51,50

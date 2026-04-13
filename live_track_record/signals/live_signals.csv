@@ -1,7 +1,1 @@
-date_committed,ticker,signal_regime,month,ps_zscore,high_conviction,V,phi,H,entropy_gap,ps_raw,n_corp,n_structural_kw
-2026-04-13,MSFT,positive,2026-04,2.3954,True,330,0.2,0.5148,0.4852,32.0261,330.0,66.0
-2026-04-13,AMZN,positive,2026-04,47.3478,True,324,0.3179,0.5403,0.4597,47.3478,324.0,103.0
-2026-04-13,CRM,positive,2026-04,12.0,True,232,0.0517,0.0,1.0,12.0,232.0,12.0
-2026-04-13,SNOW,positive,2026-04,5.661,True,381,0.2992,0.9503,0.0497,5.661,381.0,114.0
-2026-04-13,DDOG,negative,2026-04,258.2863,True,2346,0.3257,0.6619,0.3381,258.2863,2346.0,764.0
-2026-04-13,TWLO,negative,2026-04,5.0878,True,51,0.9804,0.8982,0.1018,5.0878,51.0,50.0
+date_committed,ticker,signal_regime,month,ps_zscore,high_conviction,V,phi_kw,phi_adj,phi_calibration,H,entropy_gap,ps_raw_live,ps_raw_mean,ps_raw_std,n_corp,n_structural_kw
