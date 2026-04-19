@@ -1,0 +1,6 @@
+company,predicted,repo,pillar,fpp,n_sampled,passes,status,verdict
+FSLY,negative,fastly/Viceroy,Edge Compute Runtime,0.14,100,True,PASS,PROCEED
+FSLY,negative,fastly/pushpin,Real-time Push Infrastructure,0.22,100,True,PASS,PROCEED
+FSLY,negative,fastly/js-compute-runtime,JS Edge Runtime,0.12,100,True,PASS,PROCEED
+FSLY,negative,fastly/cli,Developer Platform,0.15,100,True,PASS,PROCEED
+FSLY,negative,fastly/go-fastly,API Client,0.29,100,True,PASS,PROCEED
