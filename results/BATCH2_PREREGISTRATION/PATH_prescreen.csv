@@ -1,0 +1,6 @@
+company,predicted,repo,pillar,fpp,n_sampled,passes,status,verdict
+PATH,no_signal,UiPath/uipath-python,Python SDK,0.11,100,True,PASS,PROCEED
+PATH,no_signal,UiPath/CoreWF,Workflow Engine,0.043,70,False,BELOW THRESHOLD,PROCEED
+PATH,no_signal,UiPath/Community.Activities,Activity Library,0.09,100,True,PASS,PROCEED
+PATH,no_signal,UiPath/uipath-langchain-python,AI Integration,0.09,100,True,PASS,PROCEED
+PATH,no_signal,UiPath/apollo-ui,UI Platform,0.11,100,True,PASS,PROCEED

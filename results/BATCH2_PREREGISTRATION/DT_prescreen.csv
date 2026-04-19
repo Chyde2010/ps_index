@@ -1,0 +1,6 @@
+company,predicted,repo,pillar,fpp,n_sampled,passes,status,verdict
+DT,negative,Dynatrace/dynatrace-operator,Platform Operator,0.15,100,True,PASS,PROCEED
+DT,negative,Dynatrace/dynatrace-configuration-as-code,Config as Code,0.14,100,True,PASS,PROCEED
+DT,negative,Dynatrace/dynatrace-otel-collector,Observability Ingestion,0.25,100,True,PASS,PROCEED
+DT,negative,Dynatrace/dynatrace-for-ai,AI Platform,0.0,0,False,BELOW THRESHOLD,PROCEED
+DT,negative,Dynatrace/backstage-plugin,Developer Platform,0.082,61,True,PASS,PROCEED

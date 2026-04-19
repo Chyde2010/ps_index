@@ -1,0 +1,6 @@
+company,repo,pillar,fpp,n_sampled,passes,status,verdict
+GTLB,gitlabhq/gitlabhq,Core Platform,0.91,100,True,PASS,PROCEED
+GTLB,gitlabhq/gitlab-runner,CI Execution,0.07,100,True,PASS,PROCEED
+GTLB,gitlabhq/gitlab-shell,Git Access Layer,0.07,100,True,PASS,PROCEED
+GTLB,gitlabhq/omnibus-gitlab,Platform Packaging,0.02,100,False,BELOW THRESHOLD,PROCEED
+GTLB,gitlabhq/terraform-provider-gitlab,Infrastructure as Code,0.625,64,True,PASS,PROCEED
