@@ -1,0 +1,6 @@
+company,predicted,repo,pillar,fpp,n_sampled,passes,status,verdict
+AAPL,no_signal,apple/darwin-xnu,OS Kernel,0.96,100,True,PASS,PROCEED
+AAPL,no_signal,apple/swift,Language Runtime,0.13,100,True,PASS,PROCEED
+AAPL,no_signal,apple/axlearn,ML Training Framework,0.19,100,True,PASS,PROCEED
+AAPL,no_signal,apple/swift-nio,Networking Framework,0.19,100,True,PASS,PROCEED
+AAPL,no_signal,apple/swift-crypto,Cryptography,0.22,100,True,PASS,PROCEED
