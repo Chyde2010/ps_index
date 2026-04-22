@@ -1,0 +1,4 @@
+label,y_col,beta_uni,pval_uni,r2_uni,beta_multi,pval_multi,r2_multi,n,sig_uni,sig_multi,universe
+1M forward,fwd_1m,-0.00049,0.8871,0.0,-0.000599,0.8508,0.153,1340,False,False,17_companies
+3M forward,fwd_3m,-0.003265,0.648,0.0001,-0.002683,0.6817,0.2016,1306,False,False,17_companies
+6M forward,fwd_6m,-0.003125,0.7636,0.0001,-0.001244,0.8967,0.176,1255,False,False,17_companies

@@ -1,0 +1,25 @@
+method,sample,y_col,beta_uni,pval_uni,beta_multi,pval_multi,r2_multi,n,sig_uni,sig_multi,horizon,regime_label
+cs_raw,A1: CS on ps_raw (original method),fwd_6m,0.07802,0.0001,0.07636,0.0,0.3542,304,True,True,6M forward,Positive regime
+cs_log,A2: CS on ps_log,fwd_6m,0.0598,0.0004,0.05713,0.0006,0.3367,304,True,True,6M forward,Positive regime
+cs_own_z,B:  CS on own-history Z (Paper 2),fwd_6m,0.05777,0.0,0.05186,0.0001,0.3397,304,True,True,6M forward,Positive regime
+ps_own_z,B0: Own-history Z (no cs ranking),fwd_6m,0.0539,0.0013,0.05122,0.0003,0.3486,304,True,True,6M forward,Positive regime
+cs_raw,A1: CS on ps_raw (original method),fwd_6m,-0.02426,0.3887,-0.01487,0.5947,0.1956,197,False,False,6M forward,Negative regime
+cs_log,A2: CS on ps_log,fwd_6m,-0.03332,0.3068,-0.02215,0.5063,0.1972,197,False,False,6M forward,Negative regime
+cs_own_z,B:  CS on own-history Z (Paper 2),fwd_6m,-0.13821,0.0003,-0.11886,0.0007,0.2557,197,True,True,6M forward,Negative regime
+ps_own_z,B0: Own-history Z (no cs ranking),fwd_6m,-0.11549,0.0033,-0.09837,0.0022,0.2402,197,True,True,6M forward,Negative regime
+cs_raw,A1: CS on ps_raw (original method),fwd_6m,0.01412,0.275,0.01656,0.1587,0.2153,501,False,False,6M forward,All signal companies
+cs_log,A2: CS on ps_log,fwd_6m,0.00793,0.582,0.00956,0.47,0.2138,501,False,False,6M forward,All signal companies
+cs_own_z,B:  CS on own-history Z (Paper 2),fwd_6m,-0.02098,0.1349,-0.02098,0.1138,0.2165,501,False,False,6M forward,All signal companies
+ps_own_z,B0: Own-history Z (no cs ranking),fwd_6m,-0.00787,0.6186,-0.00682,0.6431,0.2135,501,False,False,6M forward,All signal companies
+cs_raw,A1: CS on ps_raw (original method),fwd_3m,0.04012,0.0009,0.04194,0.0003,0.349,316,True,True,3M forward,Positive regime
+cs_log,A2: CS on ps_log,fwd_3m,0.03228,0.002,0.03476,0.0008,0.3443,316,True,True,3M forward,Positive regime
+cs_own_z,B:  CS on own-history Z (Paper 2),fwd_3m,0.03349,0.0001,0.03115,0.0002,0.3454,316,True,True,3M forward,Positive regime
+ps_own_z,B0: Own-history Z (no cs ranking),fwd_3m,0.02674,0.0201,0.02626,0.0036,0.3426,316,True,True,3M forward,Positive regime
+cs_raw,A1: CS on ps_raw (original method),fwd_3m,-0.00964,0.4702,-0.00469,0.706,0.2782,206,False,False,3M forward,Negative regime
+cs_log,A2: CS on ps_log,fwd_3m,-0.01085,0.4796,-0.00452,0.7554,0.2782,206,False,False,3M forward,Negative regime
+cs_own_z,B:  CS on own-history Z (Paper 2),fwd_3m,-0.06344,0.0056,-0.04431,0.0237,0.2944,206,True,True,3M forward,Negative regime
+ps_own_z,B0: Own-history Z (no cs ranking),fwd_3m,-0.05953,0.017,-0.04425,0.0382,0.2964,206,True,True,3M forward,Negative regime
+cs_raw,A1: CS on ps_raw (original method),fwd_3m,0.00881,0.299,0.01059,0.1409,0.2589,522,False,False,3M forward,All signal companies
+cs_log,A2: CS on ps_log,fwd_3m,0.00812,0.3481,0.00975,0.1891,0.2587,522,False,False,3M forward,All signal companies
+cs_own_z,B:  CS on own-history Z (Paper 2),fwd_3m,-0.00651,0.4851,-0.00571,0.502,0.2578,522,False,False,3M forward,All signal companies
+ps_own_z,B0: Own-history Z (no cs ranking),fwd_3m,-0.00639,0.5837,-0.00502,0.6262,0.2577,522,False,False,3M forward,All signal companies
