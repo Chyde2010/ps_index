@@ -1,0 +1,8 @@
+month,ticker,regime,V,phi,H,entropy_gap,ps_raw,ps_own_z,cs_z,hc_flag,hc_cs_flag,n_corp,n_structural
+2026-03,AMZN,positive,663,0.2836,0.0664,0.9336,175.5214,0.0,0.0,False,False,663,188
+2026-03,CRM,positive,201,0.0249,0.0,1.0,5.0,0.0,0.0,False,False,201,5
+2026-03,DDOG,negative,1969,0.1219,0.5668,0.4332,103.9762,0.0,0.0,False,False,1969,240
+2026-03,GTLB,negative,772,0.0453,0.8205,0.1795,6.2826,0.0,0.0,False,False,772,35
+2026-03,MSFT,positive,2487,0.0877,0.0,1.0,218.0,0.0,0.0,False,False,2487,218
+2026-03,SNOW,positive,175,0.1771,0.9205,0.0795,2.466,0.0,0.0,False,False,175,31
+2026-03,TWLO,negative,48,0.4375,0.9907,0.0093,0.1953,0.0,0.0,False,False,48,21
