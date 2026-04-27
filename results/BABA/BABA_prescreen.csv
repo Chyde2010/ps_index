@@ -1,0 +1,5 @@
+company,predicted,repo,pillar,fpp,n_sampled,passes,status,verdict
+BABA,positive,aliyun/terraform-provider-alicloud,Cloud Infrastructure,0.34,100,True,PASS,PROCEED
+BABA,positive,aliyun/alibabacloud-python-sdk,Cloud SDK,0.53,100,True,PASS,PROCEED
+BABA,positive,aliyun/alibabacloud-java-sdk,Cloud SDK,0.63,100,True,PASS,PROCEED
+BABA,positive,alibaba/spring-cloud-alibaba,Platform Middleware,0.1,100,True,PASS,PROCEED
