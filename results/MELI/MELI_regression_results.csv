@@ -1,0 +1,10 @@
+label,beta_raw,pval_raw,r2_raw,beta_full,pval_full,r2_full,n_full,signal_retained,commercial_bar,subset
+1M forward,-0.0206,0.0706,0.0268,-0.0198,0.0627,0.3344,120,95.8,fail,Full
+3M forward,-0.0599,0.0053,0.0635,-0.0492,0.0185,0.3063,118,82.2,fail,Full
+6M forward,-0.051,0.0877,0.0249,-0.0246,0.4178,0.2316,115,48.3,fail,Full
+Low VIX 1M,0.0222,0.4958,0.0055,-0.0007,0.9827,0.21,86,-3.0,fail,LowVIX
+Low VIX 3M,0.07,0.2043,0.0191,0.034,0.5248,0.1591,85,48.6,fail,LowVIX
+Low VIX 6M,0.1601,0.0471,0.0478,0.172,0.0322,0.1139,82,107.4,PASS,LowVIX
+High VIX 1M,-0.0348,0.0255,0.1384,-0.0377,0.0078,0.6205,34,108.4,fail,HighVIX
+High VIX 3M,-0.1002,0.0014,0.2695,-0.0605,0.0893,0.514,33,60.4,fail,HighVIX
+High VIX 6M,-0.1095,0.007,0.2005,-0.0539,0.2631,0.4986,33,49.2,fail,HighVIX

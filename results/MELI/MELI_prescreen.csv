@@ -1,0 +1,7 @@
+company,predicted,repo,pillar,fpp,n_sampled,passes,status,verdict
+MELI,positive,mercadopago/sdk-android,Payment SDK Android,0.264,91,True,PASS,PROCEED
+MELI,positive,mercadopago/sdk-ios,Payment SDK iOS,0.073,96,True,PASS,PROCEED
+MELI,positive,mercadopago/sdk-java,Payment SDK Java,0.13,100,True,PASS,PROCEED
+MELI,positive,mercadopago/sdk-python,Payment SDK Python,0.11,100,True,PASS,PROCEED
+MELI,positive,mercadolibre/fury-core-ci,Platform Infrastructure,0.02,100,False,BELOW THRESHOLD,PROCEED
+MELI,positive,mercadolibre/mlbusiness-components-ios,Mobile Platform,0.04,100,False,BELOW THRESHOLD,PROCEED
