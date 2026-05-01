@@ -6,3 +6,10 @@ month,ticker,regime,V,phi,H,entropy_gap,ps_raw,ps_own_z,cs_z,hc_flag,hc_cs_flag,
 2026-03,MSFT,positive,2487,0.0877,0.0,1.0,218.0,0.0,0.0,False,False,2487,218
 2026-03,SNOW,positive,175,0.1771,0.9205,0.0795,2.466,0.0,0.0,False,False,175,31
 2026-03,TWLO,negative,48,0.4375,0.9907,0.0093,0.1953,0.0,0.0,False,False,48,21
+2026-04,AMZN,positive,757,0.3012,0.0505,0.9495,216.4784,0.0,0.0,False,False,757,228
+2026-04,CRM,positive,268,0.0261,0.0,1.0,7.0,0.0,0.0,False,False,268,7
+2026-04,DDOG,negative,2136,0.1287,0.5641,0.4359,119.8683,0.0,0.0,False,False,2136,275
+2026-04,GTLB,negative,862,0.051,0.8922,0.1078,4.7447,0.0,0.0,False,False,862,44
+2026-04,MSFT,positive,2309,0.0879,0.0,1.0,203.0,0.0,0.0,False,False,2309,203
+2026-04,SNOW,positive,203,0.1724,0.9525,0.0475,1.6635,0.0,0.0,False,False,203,35
+2026-04,TWLO,negative,41,0.4634,0.9969,0.0031,0.0591,0.0,0.0,False,False,41,19
