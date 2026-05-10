@@ -7,23 +7,13 @@ Methodology (two-stage, consistent with Paper 2):
   Stage 1: Own-history Z-score (signal identification)
     Each company's ps_raw is normalised against its own
     historical distribution. HC flag triggers at +1.5 sigma.
-    This is the primary signal.
 
   Stage 2: Cross-sectional rank of own-history Z-scores
     (portfolio weighting)
-    Own-history Z-scores are already on identical scale
-    (mean=0, std=1) so cross-sectional ranking is valid
-    across companies with different repository scales.
 
 Universe:
   Positive regime : MSFT, AMZN, CRM, SNOW  (long book)
   Negative regime : DDOG, TWLO, GTLB        (short overlay)
-
-Output columns:
-  month, ticker, regime,
-  V, phi, H, entropy_gap,
-  ps_raw, ps_own_z, cs_z,
-  hc_flag, hc_cs_flag
 
 HC threshold: +1.5 sigma on own-history Z-score
 """
@@ -31,6 +21,7 @@ HC threshold: +1.5 sigma on own-history Z-score
 import os, time, math, json, requests
 import pandas as pd
 import numpy as np
+import yfinance as yf
 from scipy.stats import entropy as scipy_entropy
 from datetime import datetime, timezone
 
@@ -41,103 +32,104 @@ HEADERS = {
     'Accept':        'application/vnd.github.v3+json',
 }
 
-HC_THRESHOLD  = 1.5   # sigma on own-history Z-score
-CHURN_FLOOR   = 100   # minimum lines changed for structural event
-WINDOW_DAYS   = 90    # rolling window for V, phi, H
-BATCH_SIZE    = 20
+HC_THRESHOLD   = 1.5
+CHURN_FLOOR    = 100
+WINDOW_DAYS    = 90
+BATCH_SIZE     = 20
+NOTIONAL_TOTAL = 10000  # GBP notional per side for paper trading
 
-OUTPUT_DIR    = 'live_track_record'
-HISTORY_FILE  = f'{OUTPUT_DIR}/ps_signal_history.csv'
-SERIES_DIR    = f'{OUTPUT_DIR}/ps_series'
+OUTPUT_DIR   = 'live_track_record'
+HISTORY_FILE = f'{OUTPUT_DIR}/ps_signal_history.csv'
+WEIGHTS_FILE = f'{OUTPUT_DIR}/monthly_weights.csv'
+SERIES_DIR   = f'{OUTPUT_DIR}/ps_series'
 os.makedirs(SERIES_DIR, exist_ok=True)
 
 # ── Universe ──────────────────────────────────────────────────
-# Calibration factors from cross-sectional validation
-# Used for portfolio weight tilt (Stage 2 supplement)
 UNIVERSE = {
     'MSFT': {
-        'regime':    'positive',
-        'domains':   ['microsoft.com'],
+        'regime':  'positive',
+        'domains': ['microsoft.com'],
         'repos': [
             'microsoft/TypeScript',
             'microsoft/vscode',
             'microsoft/azure-sdk-for-python',
             'microsoft/semantic-kernel',
         ],
-        'start':     '2016-01-01T00:00:00Z',
-        'calib':     0.378,
+        'start': '2016-01-01T00:00:00Z',
+        'calib': 0.378,
     },
     'AMZN': {
-        'regime':    'positive',
-        'domains':   ['amazon.com'],
+        'regime':  'positive',
+        'domains': ['amazon.com'],
         'repos': [
             'aws/aws-sdk-js-v3',
             'aws/aws-cdk',
             'aws/amazon-sagemaker-examples',
             'aws/aws-cli',
         ],
-        'start':     '2016-01-01T00:00:00Z',
-        'calib':     0.253,
+        'start': '2016-01-01T00:00:00Z',
+        'calib': 0.253,
     },
     'CRM': {
-        'regime':    'positive',
-        'domains':   ['salesforce.com'],
+        'regime':  'positive',
+        'domains': ['salesforce.com'],
         'repos': [
             'forcedotcom/salesforcedx-vscode',
             'salesforce/lwc',
             'salesforce/Argus',
             'forcedotcom/cli',
         ],
-        'start':     '2016-01-01T00:00:00Z',
-        'calib':     0.524,
+        'start': '2016-01-01T00:00:00Z',
+        'calib': 0.524,
     },
     'SNOW': {
-        'regime':    'positive',
-        'domains':   ['snowflake.com'],
+        'regime':  'positive',
+        'domains': ['snowflake.com'],
         'repos': [
             'snowflakedb/snowflake-connector-python',
             'snowflakedb/gosnowflake',
             'snowflakedb/snowpark-python',
             'snowflakedb/snowflake-sqlalchemy',
         ],
-        'start':     '2019-01-01T00:00:00Z',
-        'calib':     0.528,
+        'start': '2019-01-01T00:00:00Z',
+        'calib': 0.528,
     },
     'DDOG': {
-        'regime':    'negative',
-        'domains':   ['datadoghq.com'],
+        'regime':  'negative',
+        'domains': ['datadoghq.com'],
         'repos': [
             'DataDog/datadog-agent',
             'DataDog/dd-trace-py',
             'DataDog/integrations-core',
             'DataDog/datadog-api-client-python',
         ],
-        'start':     '2016-01-01T00:00:00Z',
-        'calib':     0.511,
+        'start': '2016-01-01T00:00:00Z',
+        'calib': 0.511,
     },
     'TWLO': {
-        'regime':    'negative',
-        'domains':   ['twilio.com'],
+        'regime':  'negative',
+        'domains': ['twilio.com'],
         'repos': [
             'twilio/twilio-python',
             'twilio/twilio-node',
             'twilio/twilio-java',
             'twilio/twilio-go',
         ],
-        'start':     '2016-01-01T00:00:00Z',
-        'calib':     0.903,
+        'start': '2016-01-01T00:00:00Z',
+        'calib': 0.903,
     },
     'GTLB': {
-        'regime':    'negative',
-        'domains':   ['gitlab.com'],
+        'regime':  'negative',
+        'domains': ['gitlab.com'],
         'repos': [
+            # gitlab-foss replaces omnibus-gitlab which had
+            # sparse corporate commits and caused silent drop
+            'gitlab-org/gitlab-foss',
             'gitlabhq/gitlab-runner',
-            'gitlabhq/gitlab-shell',
             'gitlabhq/terraform-provider-gitlab',
-            'gitlabhq/omnibus-gitlab',
         ],
-        'start':     '2021-10-01T00:00:00Z',
-        'calib':     0.511,  # approximated from DDOG pending own calibration
+        'start': '2021-10-01T00:00:00Z',
+        'calib': 0.511,
     },
 }
 
@@ -198,11 +190,6 @@ def compute_entropy(series, n_repos):
     return H / H_max if H_max > 0 else 0.0
 
 def fetch_commits_90d(repo, domains, window_start, window_end):
-    """
-    Fetch all commits from a repo within a 90-day window
-    and classify as corporate/structural.
-    Returns list of commit dicts.
-    """
     url    = f'https://api.github.com/repos/{repo}/commits'
     params = {
         'since':    window_start.isoformat(),
@@ -261,10 +248,6 @@ def get_churn(repo, sha):
     return 0
 
 def compute_ps_month(ticker, cfg, month_period):
-    """
-    Compute Ps components for a single month.
-    Returns dict with V, phi, H, entropy_gap, ps_raw.
-    """
     month_end    = (month_period.to_timestamp(how='end')
                     .replace(tzinfo=timezone.utc))
     window_start = month_end - pd.Timedelta(days=WINDOW_DAYS)
@@ -277,19 +260,24 @@ def compute_ps_month(ticker, cfg, month_period):
     all_struct = []
 
     for repo in repos:
-        commits = fetch_commits_90d(
-            repo, domains, window_start, month_end)
-        corp_commits = [c for c in commits if c['is_corp']]
-        all_corp.extend(corp_commits)
+        try:
+            commits = fetch_commits_90d(
+                repo, domains, window_start, month_end)
+            corp_commits = [
+                c for c in commits if c['is_corp']]
+            all_corp.extend(corp_commits)
 
-        # Fetch churn for structural candidates
-        for c in corp_commits:
-            if c['kw'] != 'structural_candidate':
-                continue
-            churn = get_churn(repo, c['sha'])
-            time.sleep(0.15)
-            if churn >= CHURN_FLOOR:
-                all_struct.append({**c, 'churn': churn})
+            for c in corp_commits:
+                if c['kw'] != 'structural_candidate':
+                    continue
+                churn = get_churn(repo, c['sha'])
+                time.sleep(0.15)
+                if churn >= CHURN_FLOOR:
+                    all_struct.append(
+                        {**c, 'churn': churn})
+        except Exception as e:
+            print(f'  WARNING: error fetching {repo}: {e}')
+            continue
 
     V   = len(all_corp)
     phi = len(all_struct) / V if V > 0 else 0.0
@@ -303,6 +291,10 @@ def compute_ps_month(ticker, cfg, month_period):
 
     ps_raw = V * phi * (1 - H)
 
+    if V == 0:
+        print(f'  WARNING: {ticker} V=0 -- '
+              f'check repo config and PAT permissions.')
+
     return {
         'V':            V,
         'phi':          round(phi, 4),
@@ -313,24 +305,13 @@ def compute_ps_month(ticker, cfg, month_period):
         'n_structural': len(all_struct),
     }
 
-# ── Stage 1: Own-history normalisation ───────────────────────
 def load_own_history(ticker):
-    """
-    Load the accumulated own-history series for a company.
-    Returns a DataFrame with month and ps_raw columns,
-    or empty DataFrame if no history yet.
-    """
     path = f'{SERIES_DIR}/{ticker}_ps_series.csv'
     if os.path.exists(path):
         return pd.read_csv(path)
     return pd.DataFrame(columns=['month', 'ps_raw'])
 
 def own_history_zscore(ps_raw, history_series):
-    """
-    Compute Z-score of ps_raw against own history.
-    history_series: pd.Series of historical ps_raw values
-    including current month.
-    """
     if len(history_series) < 3:
         return 0.0
     mean = history_series.mean()
@@ -339,14 +320,7 @@ def own_history_zscore(ps_raw, history_series):
         return 0.0
     return round((ps_raw - mean) / std, 4)
 
-# ── Stage 2: Cross-sectional ranking ─────────────────────────
 def cross_sectional_zscore(own_z_dict):
-    """
-    Normalise own-history Z-scores cross-sectionally
-    across all signal companies at this month.
-    own_z_dict: {ticker: own_z_score}
-    Returns {ticker: cs_z_score}
-    """
     values = list(own_z_dict.values())
     if len(values) < 2:
         return {t: 0.0 for t in own_z_dict}
@@ -359,10 +333,86 @@ def cross_sectional_zscore(own_z_dict):
         for t, v in own_z_dict.items()
     }
 
+# ── Portfolio weights ─────────────────────────────────────────
+def fetch_price_gbp(ticker):
+    """Fetch latest price in USD and convert to GBP."""
+    try:
+        info      = yf.Ticker(ticker)
+        hist      = info.history(period='5d')
+        if hist.empty:
+            return None, None, None
+        price_usd = float(hist['Close'].iloc[-1])
+        fx        = yf.Ticker('GBPUSD=X')
+        fx_h      = fx.history(period='5d')
+        if fx_h.empty:
+            return price_usd, None, None
+        gbpusd    = float(fx_h['Close'].iloc[-1])
+        price_gbp = price_usd / gbpusd
+        return (round(price_usd, 4),
+                round(price_gbp, 4),
+                round(gbpusd, 4))
+    except Exception as e:
+        print(f'  Price fetch error {ticker}: {e}')
+        return None, None, None
+
+def compute_cs_weights(hc_rows):
+    """
+    Cross-sectional Z-score tilted weights for HC rows.
+    Shifts scores to positive before normalising so all
+    weights are non-negative.
+    """
+    if not hc_rows:
+        return []
+    cs_scores = np.array(
+        [r['cs_z'] for r in hc_rows], dtype=float)
+    min_score = cs_scores.min()
+    if min_score < 0:
+        cs_scores = cs_scores - min_score + 0.01
+    total = cs_scores.sum()
+    weights = (cs_scores / total if total > 0
+               else np.ones(len(hc_rows)) / len(hc_rows))
+    return [
+        {'ticker': r['ticker'], 'weight': round(w, 4)}
+        for r, w in zip(hc_rows, weights)
+    ]
+
+def build_weight_rows(hc_rows, side, regime,
+                      month_period, notional_total):
+    """Build weight rows for one side (long or short)."""
+    rows = []
+    for wt in compute_cs_weights(hc_rows):
+        ticker = wt['ticker']
+        row    = next(
+            r for r in hc_rows
+            if r['ticker'] == ticker)
+        price_usd, price_gbp, gbpusd = \
+            fetch_price_gbp(ticker)
+        notional = round(notional_total * wt['weight'], 2)
+        shares   = (round(notional / price_gbp, 4)
+                    if price_gbp else None)
+        rows.append({
+            'month':         str(month_period),
+            'ticker':        ticker,
+            'side':          side,
+            'signal_regime': regime,
+            'ps_zscore':     row['ps_own_z'],
+            'weight':        wt['weight'],
+            'price_usd':     price_usd,
+            'price_gbp':     price_gbp,
+            'gbpusd':        gbpusd,
+            'notional_gbp':  notional,
+            'shares':        shares,
+        })
+        px_str = (f'@ £{price_gbp:.2f}'
+                  if price_gbp else 'price n/a')
+        print(f'  {side.upper():<5} {ticker}: '
+              f'weight={wt["weight"]:.3f} '
+              f'notional=£{notional:.0f} {px_str}')
+    return rows
+
 # ── Main ──────────────────────────────────────────────────────
 def main():
-    now          = datetime.now(timezone.utc)
-    # Signal for the month that just ended
+    now = datetime.now(timezone.utc)
     if now.month == 1:
         signal_year  = now.year - 1
         signal_month = 12
@@ -384,23 +434,24 @@ def main():
     print()
 
     # ── Compute Ps for each company ───────────────────────────
-    monthly_rows  = {}
-    own_z_dict    = {}
+    monthly_rows = {}
+    own_z_dict   = {}
 
     for ticker, cfg in UNIVERSE.items():
         print(f'Computing {ticker} ({cfg["regime"]})...')
+        try:
+            ps_components = compute_ps_month(
+                ticker, cfg, month_period)
+        except Exception as e:
+            print(f'  ERROR computing {ticker}: {e}')
+            print(f'  Skipping {ticker} this month.')
+            continue
 
-        # Get Ps components for this month
-        ps_components = compute_ps_month(
-            ticker, cfg, month_period)
-
-        # Load own history and append current month
-        hist_df  = load_own_history(ticker)
-        hist_raw = list(hist_df['ps_raw'].values) + \
-                   [ps_components['ps_raw']]
+        hist_df     = load_own_history(ticker)
+        hist_raw    = list(hist_df['ps_raw'].values) + \
+                      [ps_components['ps_raw']]
         hist_series = pd.Series(hist_raw)
 
-        # Stage 1: own-history Z-score
         own_z = own_history_zscore(
             ps_components['ps_raw'], hist_series)
         own_z_dict[ticker] = own_z
@@ -413,39 +464,37 @@ def main():
             'ps_own_z': own_z,
         }
 
-        # Update own history series file
         new_row = pd.DataFrame([{
-            'month':   str(month_period),
-            'ps_raw':  ps_components['ps_raw'],
-            'ps_own_z': own_z,
-            'V':       ps_components['V'],
-            'phi':     ps_components['phi'],
-            'H':       ps_components['H'],
+            'month':       str(month_period),
+            'ps_raw':      ps_components['ps_raw'],
+            'ps_own_z':    own_z,
+            'V':           ps_components['V'],
+            'phi':         ps_components['phi'],
+            'H':           ps_components['H'],
             'entropy_gap': ps_components['entropy_gap'],
         }])
         updated = pd.concat(
             [hist_df, new_row], ignore_index=True)
-        series_path = (
-            f'{SERIES_DIR}/{ticker}_ps_series.csv')
-        updated.to_csv(series_path, index=False)
+        updated.to_csv(
+            f'{SERIES_DIR}/{ticker}_ps_series.csv',
+            index=False)
         print(f'  ps_raw={ps_components["ps_raw"]:.3f} '
               f'own_z={own_z:.3f}')
 
     print()
 
-    # ── Stage 2: Cross-sectional Z-score ─────────────────────
+    # ── Stage 2: Cross-sectional Z-scores ────────────────────
     cs_z_dict = cross_sectional_zscore(own_z_dict)
     print('Cross-sectional Z-scores (Stage 2):')
     for ticker, cs_z in sorted(
             cs_z_dict.items(),
             key=lambda x: x[1], reverse=True):
-        own_z = own_z_dict[ticker]
         regime = UNIVERSE[ticker]['regime']
-        print(f'  {ticker:<6} own_z={own_z:>6.3f} '
+        print(f'  {ticker:<6} own_z={own_z_dict[ticker]:>6.3f} '
               f'cs_z={cs_z:>6.3f} [{regime}]')
     print()
 
-    # ── Add Stage 2 and HC flags to rows ─────────────────────
+    # ── Add Stage 2 and HC flags ──────────────────────────────
     output_rows = []
     for ticker, row in monthly_rows.items():
         own_z  = row['ps_own_z']
@@ -454,13 +503,12 @@ def main():
         hc_cs  = cs_z  >= HC_THRESHOLD
         output_rows.append({
             **row,
-            'cs_z':      cs_z,
-            'hc_flag':   hc,
+            'cs_z':       cs_z,
+            'hc_flag':    hc,
             'hc_cs_flag': hc_cs,
         })
 
-    # ── HC episode summary ────────────────────────────────────
-    print('HC Episodes this month:')
+    # ── HC summary ────────────────────────────────────────────
     hc_pos = [r for r in output_rows
               if r['hc_flag'] and
               r['regime'] == 'positive']
@@ -468,8 +516,9 @@ def main():
               if r['hc_flag'] and
               r['regime'] == 'negative']
 
+    print('HC Episodes this month:')
     if hc_pos:
-        print(f'  LONG signals (positive regime HC):')
+        print('  LONG signals (positive regime HC):')
         for r in hc_pos:
             print(f'    {r["ticker"]}: '
                   f'own_z={r["ps_own_z"]:.3f} '
@@ -478,7 +527,7 @@ def main():
         print('  No positive regime HC this month')
 
     if hc_neg:
-        print(f'  SHORT signals (negative regime HC):')
+        print('  SHORT signals (negative regime HC):')
         for r in hc_neg:
             print(f'    {r["ticker"]}: '
                   f'own_z={r["ps_own_z"]:.3f} '
@@ -487,11 +536,9 @@ def main():
         print('  No negative regime HC this month')
     print()
 
-    # ── Load history and append ───────────────────────────────
+    # ── Save signal history ───────────────────────────────────
     if os.path.exists(HISTORY_FILE):
         history = pd.read_csv(HISTORY_FILE)
-        # Remove any existing rows for this month
-        # (idempotent re-run protection)
         history = history[
             history['month'] != str(month_period)]
     else:
@@ -500,13 +547,10 @@ def main():
     new_rows_df = pd.DataFrame(output_rows)
     history     = pd.concat(
         [history, new_rows_df], ignore_index=True)
-
-    # Sort by month then ticker
-    history = history.sort_values(
+    history     = history.sort_values(
         ['month', 'ticker']).reset_index(drop=True)
 
-    # Canonical column order
-    cols = [
+    sig_cols = [
         'month', 'ticker', 'regime',
         'V', 'phi', 'H', 'entropy_gap',
         'ps_raw', 'ps_own_z', 'cs_z',
@@ -514,15 +558,62 @@ def main():
         'n_corp', 'n_structural',
     ]
     history = history[[
-        c for c in cols if c in history.columns]]
+        c for c in sig_cols if c in history.columns]]
     history.to_csv(HISTORY_FILE, index=False)
-
     print(f'Signal saved to {HISTORY_FILE}')
     print(f'Total history rows: {len(history)}')
     print()
+
+    # ── Portfolio weights ─────────────────────────────────────
+    print('Computing portfolio weights...')
+    weight_rows = []
+
+    weight_rows += build_weight_rows(
+        hc_pos, 'long', 'positive',
+        month_period, NOTIONAL_TOTAL)
+
+    weight_rows += build_weight_rows(
+        hc_neg, 'short', 'negative',
+        month_period, NOTIONAL_TOTAL)
+
+    if not weight_rows:
+        print('  No HC signals -- flat position this month')
+
+    # Load and update weights history
+    if os.path.exists(WEIGHTS_FILE):
+        wt_hist = pd.read_csv(WEIGHTS_FILE)
+        wt_hist = wt_hist[
+            wt_hist['month'] != str(month_period)]
+    else:
+        wt_hist = pd.DataFrame()
+
+    if weight_rows:
+        new_wt_df = pd.DataFrame(weight_rows)
+        wt_hist   = pd.concat(
+            [wt_hist, new_wt_df], ignore_index=True)
+
+    wt_cols = [
+        'month', 'ticker', 'side', 'signal_regime',
+        'ps_zscore', 'weight',
+        'price_usd', 'price_gbp', 'gbpusd',
+        'notional_gbp', 'shares',
+    ]
+    if not wt_hist.empty:
+        wt_hist = wt_hist.sort_values(
+            ['month', 'side', 'ticker']
+        ).reset_index(drop=True)
+        wt_hist = wt_hist[[
+            c for c in wt_cols
+            if c in wt_hist.columns]]
+
+    wt_hist.to_csv(WEIGHTS_FILE, index=False)
+    print(f'Weights saved to {WEIGHTS_FILE}')
+    print()
+
     print('=' * 65)
     print('SIGNAL COMPLETE')
     print('=' * 65)
+
 
 if __name__ == '__main__':
     main()
