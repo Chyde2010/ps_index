@@ -1,15 +1,12 @@
 name: Ps Index Live Track Record
-
 on:
   schedule:
     # Runs at 06:00 UTC on the 1st of each month
     - cron: '0 6 1 * *'
   workflow_dispatch:
-
 jobs:
   generate-signal:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
@@ -21,17 +18,21 @@ jobs:
 
       - name: Install dependencies
         run: |
-          pip install requests pandas numpy scipy statsmodels yfinance
+          pip install requests pandas numpy scipy yfinance
 
       - name: Generate monthly Ps signal
         env:
           GITHUB_PAT: ${{ secrets.PS_INDEX_PAT }}
         run: python live_track_record/generate_signal.py
 
-      - name: Commit and push signal file
+      - name: Rebalance paper portfolio
+        run: python live_track_record/rebalance_portfolio.py
+
+      - name: Commit and push all outputs
         run: |
           git config user.email "chyde2010@github.com"
           git config user.name  "Chyde2010"
           git add live_track_record/
-          git diff --cached --quiet || git commit -m             "Auto: monthly Ps signal $(date '+%Y-%m')"
+          git diff --cached --quiet || git commit -m \
+            "Auto: monthly Ps signal and portfolio rebalance $(date '+%Y-%m')"
           git push
