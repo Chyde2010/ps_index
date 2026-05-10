@@ -12,8 +12,12 @@ Methodology (two-stage, consistent with Paper 2):
     (portfolio weighting)
 
 Universe:
-  Positive regime : MSFT, AMZN, CRM, SNOW  (long book)
-  Negative regime : DDOG, TWLO, GTLB        (short overlay)
+  Positive regime : MSFT, AMZN, CRM, SNOW, BABA  (long book)
+  Negative regime : DDOG, TWLO, GTLB              (short overlay)
+
+BABA added June 2026 following confirmed positive signal
+in full pipeline (adj 6M beta=+0.040, p=0.006).
+First non-Western company in the Ps universe.
 
 HC threshold: +1.5 sigma on own-history Z-score
 """
@@ -130,6 +134,28 @@ UNIVERSE = {
         ],
         'start': '2021-10-01T00:00:00Z',
         'calib': 0.511,
+    },
+    'BABA': {
+        'regime':  'positive',
+        # Both confirmed corporate email domains:
+        # alibaba-inc.com: primary internal Alibaba Group domain
+        # alibabacloud.com: Alibaba Cloud product engineering domain
+        # Both confirmed in C6 pre-screen April 2026
+        # aliyun org is domain-verified on GitHub
+        'domains': ['alibaba-inc.com', 'alibabacloud.com'],
+        'repos': [
+            # Primary -- high corporate email rate, product engineering
+            'aliyun/terraform-provider-alicloud',  # FPP=0.340
+            'aliyun/alibabacloud-python-sdk',       # FPP=0.530
+            'aliyun/alibabacloud-java-sdk',         # FPP=0.630
+            # Secondary -- community-maintained, lower weight expected
+            'alibaba/spring-cloud-alibaba',         # FPP=0.100
+        ],
+        'start': '2016-01-01T00:00:00Z',
+        # Calibration factor approximated at 0.400 --
+        # midpoint of positive regime range (0.253-0.528)
+        # pending proper cross-sectional calibration in Paper 2
+        'calib': 0.400,
     },
 }
 
@@ -428,7 +454,7 @@ def main():
     print('Stage 1: Own-history Z-score (signal id)')
     print('Stage 2: Cross-sectional rank (portfolio wt)')
     print(f'HC threshold: +{HC_THRESHOLD} sigma')
-    print('Universe: MSFT, AMZN, CRM, SNOW (long)')
+    print('Universe: MSFT, AMZN, CRM, SNOW, BABA (long)')
     print('          DDOG, TWLO, GTLB (short overlay)')
     print('=' * 65)
     print()

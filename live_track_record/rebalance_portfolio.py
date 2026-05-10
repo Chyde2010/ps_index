@@ -9,8 +9,11 @@ prices, records positions and P&L vs benchmark.
 
 Structure:
   $1,000,000 starting capital
-  Long book : $700,000 -- positive regime (MSFT, AMZN, CRM, SNOW)
+  Long book : $700,000 -- positive regime (MSFT, AMZN, CRM, SNOW, BABA)
   Short book : $300,000 -- negative regime (DDOG, TWLO, GTLB)
+
+BABA added June 2026 following confirmed positive signal
+(adj 6M beta=+0.040, p=0.006). First non-Western company.
 
 Signal tilt:
   HC signal (z >= 1.5) : 2.0x equal-weight
@@ -46,7 +49,7 @@ SNAPSHOT_DIR   = OUTPUT_DIR
 POSITIONS_FILE = f'{PORTFOLIO_DIR}/portfolio_positions.csv'
 PERF_FILE      = f'{PORTFOLIO_DIR}/portfolio_performance.csv'
 
-LONG_TICKERS   = ['MSFT', 'AMZN', 'CRM', 'SNOW']
+LONG_TICKERS   = ['MSFT', 'AMZN', 'CRM', 'SNOW', 'BABA']
 SHORT_TICKERS  = ['DDOG', 'TWLO', 'GTLB']
 ALL_TICKERS    = LONG_TICKERS + SHORT_TICKERS
 

@@ -60,3 +60,28 @@ portfolio_performance.csv: monthly P&L, signal return vs benchmark
 ## Inception
  
 May 1 2026. Live track record began with GitHub Actions automated run.
+
+## Universe Expansion -- June 2026
+
+BABA (Alibaba Group) added to positive regime long book
+from June 2026 rebalance.
+
+### Evidence for inclusion
+- Full pipeline run April 2026: adj 6M beta=+0.040, p=0.006
+- High VIX 6M: adj beta=+0.193, p<0.0001
+- All 9 factor-adjusted betas positive
+- HC mean 6M return: +23.1% (16 episodes, 2024-25)
+- C6 PASS: 4/4 repos, corporate email rate 79-100%
+  (alibaba-inc.com and alibabacloud.com both confirmed)
+- C7 PASS: Qwen model family compounds Chinese AI
+  infrastructure moat across enterprise market
+
+### Impact on portfolio structure
+Long book now 5 companies (was 4):
+  MSFT, AMZN, CRM, SNOW, BABA
+Equal-weight benchmark: 20% each (was 25%)
+Long capital allocation: $700,000 / 5 = $140,000 baseline
+
+BABA is the first non-Western company in the Ps universe.
+Calibration factor: 0.400 (approximated pending Paper 2
+cross-sectional calibration).
