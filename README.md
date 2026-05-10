@@ -1,3 +1,21 @@
+The Quantified Edge — Ps Index Research Repository
+Public research repository for the Structural Power Index (Ps) — a systematic signal derived from public GitHub repository activity that identifies whether a consumption-platform technology company's engineering is compounding a structural competitive moat or merely defending competitive parity.
+Published methodology paper: SSRN
+Research publication: The Quantified Edge on Substack
+
+What this repository contains
+This repository serves as the public audit trail for all Ps Index research and signal predictions. Every regime prediction is committed here with a timestamp before any pipeline is run. The git commit history is the pre-commitment record.
+
+live_track_record/ — automated monthly signal output, portfolio positions and performance vs equal-weight benchmark. Runs on the 1st of each month via GitHub Actions.
+results/ — full pipeline results for all companies tested, including regression output, robustness tests and pre-registration documents
+results/BATCH2_PREREGISTRATION/ and results/BATCH3_PREREGISTRATION/ — predictions committed before pipelines were executed
+live_track_record/paper_portfolio/ — $1m paper portfolio tracking signal vs equal-weight benchmark from 1 May 2026
+
+Current universe
+TickerCompanyRegimeSignalMSFTMicrosoftPositiveLongAMZNAmazonPositiveLongCRMSalesforcePositiveLongSNOWSnowflakePositiveLongBABAAlibaba GroupPositiveLongDDOGDatadogNegativeShort overlayTWLOTwilioNegativeShort overlayGTLBGitLabNegativeShort overlay
+Live track record began: 1 May 2026
+Last automated run: see GitHub Actions log
+
 # Structural Power Index (Ps) — Cross-Sectional Validation Study
 
 **Status:** Pre-pipeline lock — repository selections confirmed, pipeline not yet run
