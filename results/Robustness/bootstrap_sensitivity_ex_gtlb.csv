@@ -1,0 +1,4 @@
+test,n_months,actual,boot_mean,ci_95_lo,ci_95_hi,ci_excl_zero
+Mean monthly excess (ex-GTLB),61,0.012754,0.013945,0.005938,0.0236,True
+Positive beta (ex-GTLB),61,0.073625,0.077321,0.032084,0.11938,True
+Negative beta (ex-GTLB),61,-0.038612,-0.039417,-0.120915,0.038612,True

@@ -1,0 +1,5 @@
+test,actual,boot_mean,boot_std,ci_95_lo,ci_95_hi,p_value,significant,block_size,n_iterations
+Mean monthly excess return,0.013014,0.013909,0.004792,0.005172,0.02364,0.556,False,6,10000
+Sharpe ratio of excess,2.12088,2.360751,0.580668,1.277654,3.55261,0.6542,False,6,10000
+Positive regime beta,0.071673,0.068914,0.026418,0.016165,0.118223,0.463,False,6,10000
+Negative regime beta,-0.067088,-0.072322,0.030455,-0.131038,-0.013042,0.5676,False,6,10000
