@@ -1,0 +1,6 @@
+company,repo,pillar,fpp,n_sampled,passes,status,verdict
+MNDY,mondaycom/vibe,Platform UI,0.14,100,True,PASS,PROCEED
+MNDY,mondaycom/mcp,AI Platform,0.1,100,True,PASS,PROCEED
+MNDY,mondaycom/monday-sdk-js,Developer SDK,0.057,35,True,PASS,PROCEED
+MNDY,mondaycom/monday-apps-cli,Developer Tooling,0.14,100,True,PASS,PROCEED
+MNDY,mondaycom/monday-api-python-sdk,Developer SDK,0.044,68,False,BELOW THRESHOLD,PROCEED
