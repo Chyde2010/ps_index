@@ -13,7 +13,7 @@ Methodology (two-stage, consistent with Paper 2):
 
 Universe:
   Positive regime : MSFT, AMZN, CRM, SNOW, BABA  (long book)
-  Negative regime : DDOG, TWLO, GTLB              (short overlay)
+  Negative regime : DDOG, TWLO, GTLB, MNDY        (short overlay)
 
 BABA added June 2026 following confirmed positive signal
 in full pipeline (adj 6M beta=+0.040, p=0.006).
@@ -133,6 +133,26 @@ UNIVERSE = {
             'gitlabhq/terraform-provider-gitlab',
         ],
         'start': '2021-10-01T00:00:00Z',
+        'calib': 0.511,
+    },
+    'MNDY': {
+        'regime':  'negative',
+        # Confirmed corporate domain: monday.com (single domain)
+        # Israeli company -- Western email convention confirmed
+        # Email format: firstname@ or shortname@monday.com
+        # C6 pre-screen May 2026: 4/5 repos pass FPP >= 0.05
+        # Pipeline result: 9/9 negative betas, 6M adj beta=-0.209
+        # p=0.0001 -- strongest negative regime result in study
+        'domains': ['monday.com'],
+        'repos': [
+            'mondaycom/vibe',              # FPP=0.140 anchor repo
+            'mondaycom/monday-apps-cli',   # FPP=0.140
+            'mondaycom/mcp',               # FPP=0.100 AI platform
+            'mondaycom/monday-sdk-js',     # FPP=0.057 marginal
+        ],
+        'start': '2021-06-01T00:00:00Z',
+        # Calibration approximated at 0.511 (same as DDOG)
+        # pending cross-sectional calibration in Paper 2
         'calib': 0.511,
     },
     'BABA': {
@@ -455,7 +475,7 @@ def main():
     print('Stage 2: Cross-sectional rank (portfolio wt)')
     print(f'HC threshold: +{HC_THRESHOLD} sigma')
     print('Universe: MSFT, AMZN, CRM, SNOW, BABA (long)')
-    print('          DDOG, TWLO, GTLB (short overlay)')
+    print('          DDOG, TWLO, GTLB, MNDY (short overlay)')
     print('=' * 65)
     print()
 
