@@ -1,0 +1,6 @@
+company,repo,pillar,fpp,n_sampled,passes,status,verdict
+DOTD,dotmailer/dotmailer-magento2-extension,Platform Connector,0.03,100,False,BELOW THRESHOLD,PROCEED
+DOTD,dotmailer/dotdigital-for-woocommerce,Platform Connector,0.08,100,True,PASS,PROCEED
+DOTD,dotmailer/dotdigital-for-shopware-flowbuilder,Platform Connector,0.21,81,True,PASS,PROCEED
+DOTD,dotmailer/dotmailer-magento2-extension-sms,Platform Connector,0.08,100,True,PASS,PROCEED
+DOTD,dotmailer/dotdigital-for-wordpress,Platform Connector,0.1,100,True,PASS,PROCEED
