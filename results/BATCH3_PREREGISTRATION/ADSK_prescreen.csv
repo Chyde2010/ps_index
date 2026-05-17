@@ -1,0 +1,5 @@
+company,repo,pillar,fpp,n_sampled,passes,status,verdict
+ADSK,Autodesk/bifrost-usd,M&E Platform,0.333,60,True,PASS,PROCEED
+ADSK,Autodesk/arnold-usd,M&E Platform,0.04,100,False,BELOW THRESHOLD,PROCEED
+ADSK,Autodesk/maya-usd,M&E Platform,0.1,100,True,PASS,PROCEED
+ADSK,Autodesk/maya-hydra,M&E Platform,0.151,93,True,PASS,PROCEED
