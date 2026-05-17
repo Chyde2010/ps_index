@@ -1,0 +1,5 @@
+company,repo,pillar,fpp,n_sampled,passes,status,verdict
+TEAM,atlassian/atlascode,Developer Ecosystem,0.09,100,True,PASS,MARGINAL
+TEAM,atlassian/gostatsd,Platform Infrastructure,0.05,100,True,PASS,MARGINAL
+TEAM,atlassian/pragmatic-drag-and-drop,Platform UI,0.0,100,False,BELOW THRESHOLD,MARGINAL
+TEAM,atlassian/dc-app-performance-toolkit,Platform Testing,0.02,100,False,BELOW THRESHOLD,MARGINAL

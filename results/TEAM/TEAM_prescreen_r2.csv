@@ -1,0 +1,5 @@
+company,repo,pillar,fpp,n_sampled,passes,confirmed,status,verdict
+TEAM,atlassian/atlascode,Developer Ecosystem,0.09,100,True,True,PASS,PROCEED
+TEAM,atlassian/gostatsd,Platform Infrastructure,0.05,100,True,True,PASS,PROCEED
+TEAM,atlassian/date-time-api,Platform Utilities,0.081,74,True,False,PASS,PROCEED
+TEAM,atlassian/openapi-request-validator,Developer Tooling,0.08,100,True,False,PASS,PROCEED
