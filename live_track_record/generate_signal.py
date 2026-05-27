@@ -46,6 +46,11 @@ OUTPUT_DIR   = 'live_track_record'
 HISTORY_FILE = f'{OUTPUT_DIR}/ps_signal_history.csv'
 WEIGHTS_FILE = f'{OUTPUT_DIR}/monthly_weights.csv'
 SERIES_DIR   = f'{OUTPUT_DIR}/ps_series'
+# Ensure SERIES_DIR is always absolute
+if not os.path.isabs(SERIES_DIR):
+    SERIES_DIR = os.path.join(
+        os.path.dirname(os.path.abspath(__file__)),
+        'ps_series')
 os.makedirs(SERIES_DIR, exist_ok=True)
 
 # ── Universe ──────────────────────────────────────────────────
