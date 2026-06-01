@@ -137,6 +137,39 @@ COMPANIES = {
             'twilio/twilio-ruby',
         ]
     },
+    'BABA': {
+        'signal_regime': 'positive',
+        'domain':        'alibaba-inc.com',
+        'domain_alt':    'alibabacloud.com',
+        'ticker_yf':     '9988.HK',
+        'repos': [
+            'aliyun/alibabacloud-python-sdk',
+            'aliyun/alibabacloud-java-sdk',
+            'alibaba/spring-cloud-alibaba',
+        ]
+    },
+    'GTLB': {
+        'signal_regime': 'negative',
+        'domain':        'gitlab.com',
+        'ticker_yf':     'GTLB',
+        'repos': [
+            'gitlabhq/gitlabhq',
+            'gitlab-org/gitaly',
+            'gitlab-org/gitlab-runner',
+            'gitlab-org/gitlab-shell',
+        ]
+    },
+    'MNDY': {
+        'signal_regime': 'negative',
+        'domain':        'monday.com',
+        'ticker_yf':     'MNDY',
+        'repos': [
+            'mondaycom/monday-ui-react-core',
+            'mondaycom/apps-sdk',
+            'mondaycom/mcp',
+            'mondaycom/vibe',
+        ]
+    },
 }
 
 # ── Utility functions ─────────────────────────────────────────
@@ -226,7 +259,7 @@ def compute_live_ps(ticker, config):
     ps_raw_mean     = norm['ps_raw_mean']
     ps_raw_std      = norm['ps_raw_std']
     phi_calibration = norm['phi_calibration']
-    domain          = config['domain']
+    domains         = [config['domain']] + ([config['domain_alt']] if 'domain_alt' in config else [])
     repos           = config['repos']
     n_repos         = len(repos)
 
@@ -255,7 +288,9 @@ def compute_live_ps(ticker, config):
                 if c.get('commit') and c['commit'].get('author'):
                     email = (c['commit']['author']
                              .get('email', '') or '')
-                is_corp  = domain.lower() in email.lower()
+                is_corp  = any(
+                    d.lower() in email.lower()
+                    for d in domains)
                 msg      = ''
                 if c.get('commit') and c['commit'].get('message'):
                     msg = c['commit']['message']
