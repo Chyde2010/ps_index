@@ -1,2 +1,2 @@
 month,ticker,side,signal_regime,ps_zscore,weight,price_usd,price_gbp,gbpusd,notional_gbp,shares
-2026-05,DDOG,short,negative,3.3714,1.0,200.16,146.8334,1.3632,10000.0,68.1044
+2026-05,BABA,long,positive,2.5393,1.0,124.22,92.257,1.3465,10000.0,108.3929
