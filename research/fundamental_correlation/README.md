@@ -29,7 +29,8 @@ pre-committed hypotheses and results.
 
 | Metric | Status | Key finding |
 |---|---|---|
-| Revenue growth YoY | COMPLETE | AMZN β=+9.63 at T+2, R²=0.685 |
+| Revenue growth YoY (positive) | COMPLETE | AMZN β=+9.63 at T+2, R²=0.685 |
+| Revenue growth YoY (negative) | COMPLETE | DDOG β=-17.32 at T+2, R²=0.392 |
 | NRR | PENDING | |
 | Gross margin | PENDING | |
 | Operating margin | PENDING | |
