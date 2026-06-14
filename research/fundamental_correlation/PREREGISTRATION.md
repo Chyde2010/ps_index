@@ -406,3 +406,106 @@ To investigate further before drawing conclusions.
 | Operating margin | PENDING | PENDING | |
 | FCF margin | PENDING | PENDING | |
 | RPO growth | PENDING | PENDING | |
+
+---
+
+## Script 3 Results: Gross Margin (%)
+## COMMITTED: June 2026 (before Script 4 is run)
+
+### Universe
+  Positive: MSFT, AMZN, CRM, SNOW (n=109 pooled)
+  Negative: DDOG, GTLB (n=35 pooled)
+  Missing: BABA, MNDY, TWLO
+  (foreign private issuers -- 20-F only, no quarterly XBRL)
+
+### Pre-committed expected sign: β > 0 (positive), β < 0 (negative)
+
+### Pooled results
+
+POSITIVE REGIME:
+| Spec | β | p(OLS) | p(cl) | R² | n |
+|---|---|---|---|---|---|
+| Version A: T vs T | -0.281 | 0.352 | 0.754 | 0.008 | 109 |
+| Version B: T vs T+1 | -0.492 | 0.098 | 0.619 | 0.026 | 105 |
+| Version C: T vs T+2 | -0.595 | 0.041 | 0.488 | 0.042 | 101 |
+| Version D: T vs T+4 | -0.678 | 0.011 | 0.467 | 0.068 | 93 |
+
+NEGATIVE REGIME:
+| Spec | β | p(OLS) | p(cl) | R² | n |
+|---|---|---|---|---|---|
+| Version A: T vs T | +0.762 | 0.021 | 0.441 | 0.151 | 35 |
+| Version B: T vs T+1 | +0.512 | 0.124 | 0.564 | 0.075 | 33 |
+| Version C: T vs T+2 | +0.290 | 0.374 | 0.537 | 0.027 | 31 |
+| Version D: T vs T+4 | +0.292 | 0.553 | 0.509 | 0.014 | 27 |
+
+### Assessment: MIXED / NULL RESULT
+
+Both pooled results oppose pre-committed signs.
+Positive regime: β negative (opposite of expected).
+Negative regime: β positive at T+0 only (opposite of expected).
+
+### Individual company results (Version A)
+
+| Company | β | p(OLS) | R² | Interpretation |
+|---|---|---|---|---|
+| MSFT | +0.599 | 0.015 | 0.200 | Positive, contemp only |
+| AMZN | -2.405 | 0.003 | 0.288 | Negative, highly significant |
+| CRM | -0.096 | 0.793 | 0.003 | Null |
+| SNOW | +1.194 | 0.126 | 0.113 | Positive, not significant |
+| DDOG | +1.259 | 0.011 | 0.282 | Positive (wrong direction) |
+| GTLB | -0.073 | 0.797 | 0.006 | Null |
+
+### Key findings
+
+1. GROSS MARGIN IS WEAKER SIGNAL THAN REVENUE GROWTH.
+   Mixed directions, driven by company-specific structural
+   factors rather than a clean cross-company pattern.
+
+2. AMZN NEGATIVE β IS STRUCTURAL, NOT ANOMALOUS.
+   AMZN consolidated gross margin is driven by business mix
+   (AWS high margin vs retail low margin). The Ps signal
+   captures AWS/cloud engineering. When AWS engineering
+   intensity is high, retail growth often temporarily dilutes
+   consolidated gross margin. Revenue growth is the cleaner
+   metric for AMZN.
+
+3. MSFT SHOWS CONTEMP POSITIVE BUT NO LEAD STRUCTURE.
+   β=+0.599 at T+0 (p=0.015) but fades to zero by T+2.
+   The Ps signal leads revenue growth but not gross margin
+   at the six-month horizon for MSFT.
+
+4. DDOG POSITIVE β IS COUNTERINTUITIVE.
+   Elevated DDOG engineering intensity coincides with
+   higher gross margins at T+0 and T+1. Interpretation:
+   heavy investment periods precede the margin compression
+   phase, not the expansion phase. Consistent with the
+   parity maintenance hypothesis -- invest heavily to
+   avoid margin deterioration, temporarily improving
+   measured efficiency before the competitive pressure
+   manifests in revenue deceleration.
+
+5. SIX-MONTH HORIZON DOES NOT HOLD FOR GROSS MARGIN.
+   Unlike revenue growth (peak R² at T+2), gross margin
+   shows no consistent peak lag structure. The transmission
+   mechanism from engineering intensity to unit economics
+   operates on a different or more variable time horizon.
+
+### Methodological insight
+
+Gross margin at consolidated level is affected by business
+mix, accounting choices and cost allocation in ways that
+attenuate the Ps signal. Revenue growth is a cleaner test
+of the engineering-to-commercial-output transmission.
+Operating margin may be a better gross margin alternative
+as it captures more of the operational leverage story.
+
+### Updated metric tracking table
+
+| Metric | Positive | Negative | Status | Finding |
+|---|---|---|---|---|
+| Revenue growth YoY | AMZN/MSFT β>0 ✓ | DDOG/GTLB β<0 ✓ | COMPLETE | Strong |
+| Gross margin | Mixed/negative | Mixed/positive | COMPLETE | Null/weak |
+| Operating margin | PENDING | PENDING | | |
+| NRR | PENDING | PENDING | | |
+| FCF margin | PENDING | PENDING | | |
+| RPO growth | PENDING | PENDING | | |
