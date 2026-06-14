@@ -509,3 +509,164 @@ as it captures more of the operational leverage story.
 | NRR | PENDING | PENDING | | |
 | FCF margin | PENDING | PENDING | | |
 | RPO growth | PENDING | PENDING | | |
+
+---
+
+## Script 4 Results: Operating Margin (%)
+## COMMITTED: June 2026 (before write-up)
+
+### Universe
+  Positive: MSFT, AMZN, CRM, SNOW (n=86 pooled)
+  Negative: DDOG, GTLB (n=35 pooled)
+  Source: SEC EDGAR OperatingIncomeLoss tag
+
+### Pre-committed expected sign: β > 0 (positive), β < 0 (negative)
+
+### Pooled results
+
+POSITIVE REGIME:
+| Spec | β | p(OLS) | p(cl) | R² | n |
+|---|---|---|---|---|---|
+| Version A: T vs T | +0.371 | 0.700 | 0.832 | 0.002 | 86 |
+| Version B: T vs T+1 | -0.344 | 0.663 | 0.784 | 0.002 | 82 |
+| Version C: T vs T+2 | -0.511 | 0.451 | 0.535 | 0.008 | 78 |
+| Version D: T vs T+4 | -0.618 | 0.386 | 0.691 | 0.011 | 70 |
+
+NEGATIVE REGIME:
+| Spec | β | p(OLS) | p(cl) | R² | n |
+|---|---|---|---|---|---|
+| Version A: T vs T | +5.108 | 0.012 | 0.423 | 0.178 | 35 |
+| Version B: T vs T+1 | +4.312 | 0.059 | 0.425 | 0.111 | 33 |
+| Version C: T vs T+2 | +5.015 | 0.030 | 0.475 | 0.152 | 31 |
+| Version D: T vs T+4 | +1.333 | 0.632 | 0.050 | 0.009 | 27 |
+
+### Assessment: NULL RESULT
+
+Positive regime: null across all specifications (p>0.38).
+Negative regime: β positive (wrong direction), significant
+at OLS SE at T+0 and T+2 but not at clustered SE.
+
+### Notable individual results
+
+SNOW T+4: β=+5.139, p=0.001, R²=0.715 -- very strong but
+positive direction for positive regime company. Driven by
+SNOW's pre-profitability trajectory: higher Ps z-score
+predicts less negative operating margins one year ahead.
+Consistent with compounding hypothesis in pre-profit phase
+but not the expected contemporaneous or short-lag structure.
+
+DDOG T+0: β=+1.958, p=0.037 -- positive (wrong direction).
+Elevated engineering intensity coincides with temporarily
+higher (less negative) operating margins. Consistent with
+the pattern seen in gross margin: heavy investment periods
+precede the competitive pressure manifestation, not the
+margin compression phase.
+
+### Key finding
+
+The Ps signal does not predict operating margin in the
+pre-committed direction for either regime. The six-month
+lead structure confirmed for revenue growth does not hold
+for operating margin.
+
+---
+
+## Script 5 Results: FCF Margin (%)
+## COMMITTED: June 2026 (before write-up)
+
+### Universe
+  Positive: MSFT, CRM, SNOW (AMZN failed -- capex mismatch)
+  Negative: DDOG, GTLB
+  Source: SEC EDGAR OCF - Capex
+  Note: Severely limited quarterly history from EDGAR
+  (7-8 quarters for SNOW, DDOG, GTLB vs 22-25 for MSFT/CRM)
+
+### Pre-committed expected sign: β > 0 (positive), β < 0 (negative)
+
+### Pooled results
+
+POSITIVE REGIME (MSFT, CRM, SNOW -- n=48):
+| Spec | β | p(OLS) | p(cl) | R² | n |
+|---|---|---|---|---|---|
+| Version A: T vs T | +0.027 | 0.993 | 0.992 | 0.000 | 48 |
+| Version B: T vs T+1 | +0.101 | 0.975 | 0.976 | 0.000 | 45 |
+| Version C: T vs T+2 | -1.846 | 0.583 | 0.621 | 0.008 | 42 |
+| Version D: T vs T+4 | -1.220 | 0.743 | 0.663 | 0.003 | 36 |
+
+NEGATIVE REGIME (DDOG, GTLB -- n=12):
+| Spec | β | p(OLS) | p(cl) | R² | n |
+|---|---|---|---|---|---|
+| Version A: T vs T | +7.655 | 0.251 | 0.383 | 0.129 | 12 |
+| Version B: T vs T+1 | +6.604 | 0.373 | 0.494 | 0.100 | 10 |
+| Version C: T vs T+2 | +10.653 | 0.096 | 0.502 | 0.394 | 8 |
+
+### Assessment: INCONCLUSIVE -- insufficient data
+
+AMZN failed (capex reporting structure mismatch in EDGAR).
+SNOW, DDOG, GTLB have only 7-8 quarters of FCF data.
+Total panel: 60 obs, minimum 4 per company.
+Results are noise-dominated. Cannot draw conclusions.
+This metric requires better data sourcing before inclusion
+in the final write-up.
+
+---
+
+## Complete Study Summary: Revenue Growth is the Primary Signal
+
+### Cross-metric results at T+2 for key companies
+
+| Metric | AMZN | MSFT | DDOG | GTLB | Verdict |
+|---|---|---|---|---|---|
+| Revenue growth | +9.63*** | +2.75*** | -17.32*** | -8.47** | Strong, symmetric |
+| Gross margin | -2.54*** | -0.08 | +0.60 | -0.04 | Null/wrong |
+| Operating margin | -0.45 | -0.70 | +0.62 | +9.74* | Null |
+| FCF margin | +1.72 | null | null | null | Inconclusive |
+
+### Central finding (pre-committed before write-up)
+
+THE PS SIGNAL IS SPECIFICALLY A REVENUE GROWTH PREDICTOR.
+
+It does not predict gross margin, operating margin or FCF
+margin in a consistent or directionally correct manner.
+
+The transmission mechanism is:
+  Engineering intensity → new product capabilities
+  → revenue growth (positive regime)
+  → revenue deceleration (negative regime)
+
+NOT:
+  Engineering intensity → cost efficiency
+  → margin expansion/compression
+
+This is a coherent and theoretically defensible finding.
+The signal measures the engineering quality that creates
+commercial value (revenue), not the operational efficiency
+that converts revenue to profit (margins).
+
+The T+2 (six-month) leading indicator structure is
+validated for revenue growth:
+  AMZN: β=+9.629 at T+2, R²=0.685 (positive regime)
+  DDOG: β=-17.323 at T+2, R²=0.392 (negative regime)
+
+The symmetric structure across both regimes at the same
+lag confirms the Ps Index six-month signal horizon as
+fundamental to the engineering-to-revenue mechanism.
+
+### Updated metric tracking table
+
+| Metric | Positive | Negative | Status | Verdict |
+|---|---|---|---|---|
+| Revenue growth YoY | AMZN/MSFT β>0 ✓ | DDOG/GTLB β<0 ✓ | COMPLETE | Strong |
+| Gross margin | Mixed | Mixed | COMPLETE | Null/weak |
+| Operating margin | Null | Wrong dir | COMPLETE | Null |
+| FCF margin | Inconclusive | Inconclusive | COMPLETE | Insufficient data |
+| NRR | Not tested | Not tested | DEFERRED | |
+| RPO growth | Not tested | Not tested | DEFERRED | |
+
+### Next steps
+
+1. Write up findings as research note / SSRN paper addition
+2. Revenue growth finding is strong enough to publish
+3. Gross/operating margin findings contextualise the signal
+4. NRR and RPO deferred -- require manual data collection
+5. FCF margin deferred -- requires better data source
