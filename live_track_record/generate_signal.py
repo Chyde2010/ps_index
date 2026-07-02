@@ -103,9 +103,10 @@ UNIVERSE = {
         'domains': ['datadoghq.com'],
         'repos': [
             'DataDog/datadog-agent',
-            'DataDog/dd-trace-py',
             'DataDog/integrations-core',
-            'DataDog/datadog-api-client-python',
+            'DataDog/dd-trace-py',
+            'DataDog/dd-trace-go',
+            'DataDog/datadog-operator',
         ],
         'start': '2016-01-01T00:00:00Z',
         'calib': 0.511,

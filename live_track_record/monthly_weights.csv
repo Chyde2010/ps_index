@@ -1,3 +1,3 @@
 month,ticker,side,signal_regime,ps_zscore,weight,price_usd,price_gbp,gbpusd,notional_gbp,shares
 2026-05,BABA,long,positive,2.5393,1.0,124.22,92.257,1.3465,10000.0,108.3929
-2026-06,BABA,long,positive,2.6792,1.0,95.98,72.4236,1.3253,10000.0,138.0765
+2026-06,BABA,long,positive,2.5186,1.0,96.14,72.0194,1.3349,10000.0,138.8515
