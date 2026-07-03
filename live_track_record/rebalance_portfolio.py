@@ -74,12 +74,27 @@ print('=' * 65)
 print()
 
 # ── Load signal snapshot ──────────────────────────────────────
-# generate_signal.py writes snapshot_{MONTH}.csv
+# Primary source: live_signals.csv from monthly_signal.py
+# (canonical 90-day rolling window signal)
+# Fallback: ps_signal_history.csv from generate_signal.py
+live_signals_path = (
+    f'{OUTPUT_DIR}/signals/live_signals.csv')
 snapshot_path = f'{SNAPSHOT_DIR}/snapshot_{MONTH}.csv'
 
-if not os.path.exists(snapshot_path):
-    # Fall back to ps_signal_history.csv if no snapshot
-    print(f'Snapshot not found at {snapshot_path}')
+if os.path.exists(live_signals_path):
+    print(f'Loading canonical signal from live_signals.csv')
+    all_signals = pd.read_csv(live_signals_path)
+    snap = all_signals[
+        all_signals['month'] == MONTH].copy()
+    if snap.empty:
+        print(f'ERROR: No signal data for {MONTH} '
+              'in live_signals.csv. '
+              'Rebalancing skipped.')
+        sys.exit(0)
+elif os.path.exists(snapshot_path):
+    print(f'Falling back to snapshot: {snapshot_path}')
+    snap = pd.read_csv(snapshot_path)
+else:
     print('Falling back to ps_signal_history.csv...')
     history_path = f'{OUTPUT_DIR}/ps_signal_history.csv'
     if not os.path.exists(history_path):
@@ -92,14 +107,11 @@ if not os.path.exists(snapshot_path):
         print(f'ERROR: No signal data for {MONTH}. '
               'Rebalancing skipped.')
         sys.exit(0)
-    # Map column names
     snap = snap.rename(columns={
         'ps_own_z': 'ps_zscore',
         'hc_flag':  'high_conviction',
         'regime':   'signal_regime',
     })
-else:
-    snap = pd.read_csv(snapshot_path)
 
 print('Signal data loaded:')
 cols = ['ticker', 'signal_regime',
