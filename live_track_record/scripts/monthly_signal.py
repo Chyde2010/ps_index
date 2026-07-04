@@ -139,9 +139,11 @@ COMPANIES = {
     },
     'BABA': {
         'signal_regime': 'positive',
-        'domain':        'alibabacloud.com',
+        'domain':        'alibaba-inc.com',
+        'domain_alt':    'alibabacloud.com',
         'ticker_yf':     '9988.HK',
         'repos': [
+            'aliyun/terraform-provider-alicloud',
             'aliyun/alibabacloud-python-sdk',
             'aliyun/alibabacloud-java-sdk',
         ]
@@ -151,8 +153,9 @@ COMPANIES = {
         'domain':        'gitlab.com',
         'ticker_yf':     'GTLB',
         'repos': [
-            'gitlabhq/gitlabhq',
-            'gitlab-org/gitlab-ce',
+            'gitlab-org/gitlab-foss',
+            'gitlabhq/gitlab-runner',
+            'gitlabhq/terraform-provider-gitlab',
         ]
     },
     'MNDY': {
@@ -160,9 +163,10 @@ COMPANIES = {
         'domain':        'monday.com',
         'ticker_yf':     'MNDY',
         'repos': [
-            'mondaycom/monday-ui-react-core',
             'mondaycom/vibe',
+            'mondaycom/monday-apps-cli',
             'mondaycom/mcp',
+            'mondaycom/monday-sdk-js',
         ]
     },
 }
