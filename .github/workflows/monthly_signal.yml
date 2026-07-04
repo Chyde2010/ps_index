@@ -33,11 +33,18 @@ jobs:
         run: |
           python live_track_record/scripts/monthly_signal.py
 
+      - name: Rebalance paper portfolio
+        env:
+          PS_INDEX_PAT: ${{ secrets.PS_INDEX_PAT }}
+        run: |
+          pip install yfinance -q
+          python live_track_record/rebalance_portfolio.py
+
       - name: Commit signal readings
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
-          commit_message: "Auto: Monthly Ps signal reading"
-          file_pattern: "live_track_record/signals/*"
+          commit_message: "Auto: Monthly Ps signal and portfolio rebalance"
+          file_pattern: "live_track_record/signals/* live_track_record/paper_portfolio/*"
           commit_user_email: github-actions@github.com
           commit_user_name: Ps Index Bot
           push_options: '--force'
