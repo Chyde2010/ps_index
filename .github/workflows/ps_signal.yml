@@ -1,8 +1,8 @@
 name: Ps Index Live Track Record
 on:
-  schedule:
-    # Runs at 06:00 UTC on the 1st of each month
-    - cron: '0 6 1 * *'
+  # Disabled 2026-07 -- rebalance_portfolio.py
+  # now reads from live_signals.csv (monthly_signal.py)
+  # generate_signal.py is retained for reference only
   workflow_dispatch:
 jobs:
   generate-signal:
