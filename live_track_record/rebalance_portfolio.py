@@ -2,29 +2,30 @@
 Ps Index Paper Portfolio -- Monthly Rebalancer
 ==============================================
 
-Runs automatically after generate_signal.py in the
-GitHub Actions workflow. Reads the current month's
-snapshot, computes signal-tilted weights, fetches
-prices, records positions and P&L vs benchmark.
+Runs automatically after monthly_signal.py in the
+GitHub Actions workflow. Reads the current month signal
+from live_signals.csv, computes signal-tilted weights,
+fetches prices, records positions and P&L vs benchmark.
 
 Structure:
-  $1,000,000 starting capital
-  Long book : $700,000 -- positive regime (MSFT, AMZN, CRM, SNOW, BABA)
-  Short book : $300,000 -- negative regime (DDOG, TWLO, GTLB, MNDY)
+  GBP 1,000,000 starting capital
+  Long book : 70% -- positive regime (MSFT AMZN CRM SNOW BABA)
+  Short book : 30% -- negative regime (DDOG TWLO GTLB MNDY)
 
-BABA added June 2026 following confirmed positive signal
-(adj 6M beta=+0.040, p=0.006). First non-Western company.
-
-Signal tilt:
-  HC signal (z >= 1.5) : 2.0x equal-weight
-  z >= 0.5             : 1.2x equal-weight
-  z >= 0.0             : 1.0x equal-weight (neutral)
-  z <  0.0             : 0.8x equal-weight (underweight)
+Signal tilt (published methodology):
+  HC signal (own_z >= 1.5) : 1.5x equal-weight share
+  All other tickers        : 1.0x equal-weight share
+  Weights normalised within each book.
 
 Benchmark:
   Equal-weight same universe, same 70/30 capital split.
-  Rebalanced monthly. Any outperformance vs benchmark
-  is attributable solely to the Ps signal tilts.
+  Rebalanced monthly. Outperformance vs benchmark is
+  attributable solely to the HC signal tilt.
+
+P&L calculation:
+  Uses stored sig_notional_usd and bm_notional_usd from
+  prior month positions (canonical notional values).
+  Converts USD P&L to GBP using prior month GBPUSD rate.
 
 Output files (live_track_record/paper_portfolio/):
   portfolio_positions.csv  -- monthly position records
@@ -38,14 +39,14 @@ import yfinance as yf
 from datetime import datetime, timezone
 
 # ── Configuration ─────────────────────────────────────────────
-STARTING_CAPITAL_USD = 1_000_000
-LONG_CAPITAL         = STARTING_CAPITAL_USD * 0.70
-SHORT_CAPITAL        = STARTING_CAPITAL_USD * 0.30
+STARTING_CAPITAL_GBP = 1_000_000
+LONG_PCT             = 0.70
+SHORT_PCT            = 0.30
+HC_MULTIPLIER        = 1.5
 HC_THRESHOLD         = 1.5
 
 OUTPUT_DIR     = 'live_track_record'
 PORTFOLIO_DIR  = f'{OUTPUT_DIR}/paper_portfolio'
-SNAPSHOT_DIR   = OUTPUT_DIR
 POSITIONS_FILE = f'{PORTFOLIO_DIR}/portfolio_positions.csv'
 PERF_FILE      = f'{PORTFOLIO_DIR}/portfolio_performance.csv'
 
@@ -56,8 +57,6 @@ ALL_TICKERS    = LONG_TICKERS + SHORT_TICKERS
 os.makedirs(PORTFOLIO_DIR, exist_ok=True)
 
 # ── Determine current signal month ────────────────────────────
-# Mirrors the logic in generate_signal.py --
-# signal is for the month that just ended.
 now = datetime.now(timezone.utc)
 if now.month == 1:
     signal_year  = now.year - 1
@@ -73,125 +72,79 @@ print(f'Running: {now.strftime("%Y-%m-%d %H:%M UTC")}')
 print('=' * 65)
 print()
 
-# ── Load signal snapshot ──────────────────────────────────────
-# Primary source: live_signals.csv from monthly_signal.py
-# (canonical 90-day rolling window signal)
-# Fallback: ps_signal_history.csv from generate_signal.py
-live_signals_path = (
-    f'{OUTPUT_DIR}/signals/live_signals.csv')
-snapshot_path = f'{SNAPSHOT_DIR}/snapshot_{MONTH}.csv'
+# ── Load signal from live_signals.csv ────────────────────────
+live_signals_path = f'{OUTPUT_DIR}/signals/live_signals.csv'
+if not os.path.exists(live_signals_path):
+    print('ERROR: live_signals.csv not found.')
+    sys.exit(1)
 
-if os.path.exists(live_signals_path):
-    print(f'Loading canonical signal from live_signals.csv')
-    all_signals = pd.read_csv(live_signals_path)
-    snap = all_signals[
-        all_signals['month'] == MONTH].copy()
-    if snap.empty:
-        print(f'ERROR: No signal data for {MONTH} '
-              'in live_signals.csv. '
-              'Rebalancing skipped.')
-        sys.exit(0)
-elif os.path.exists(snapshot_path):
-    print(f'Falling back to snapshot: {snapshot_path}')
-    snap = pd.read_csv(snapshot_path)
-else:
-    print('Falling back to ps_signal_history.csv...')
-    history_path = f'{OUTPUT_DIR}/ps_signal_history.csv'
-    if not os.path.exists(history_path):
-        print('ERROR: No signal data found. '
-              'Rebalancing skipped.')
-        sys.exit(0)
-    hist = pd.read_csv(history_path)
-    snap = hist[hist['month'] == MONTH].copy()
-    if snap.empty:
-        print(f'ERROR: No signal data for {MONTH}. '
-              'Rebalancing skipped.')
-        sys.exit(0)
-    snap = snap.rename(columns={
-        'ps_own_z': 'ps_zscore',
-        'hc_flag':  'high_conviction',
-        'regime':   'signal_regime',
-    })
+all_signals = pd.read_csv(live_signals_path)
+snap = all_signals[all_signals['month'] == MONTH].copy()
+if snap.empty:
+    print(f'ERROR: No signal data for {MONTH}.')
+    sys.exit(1)
 
+print(f'Loading canonical signal from live_signals.csv')
 print('Signal data loaded:')
-cols = ['ticker', 'signal_regime',
-        'ps_zscore', 'high_conviction']
-cols = [c for c in cols if c in snap.columns]
+cols = ['ticker', 'signal_regime', 'ps_zscore',
+        'high_conviction']
 print(snap[cols].to_string(index=False))
 print()
 
-# Build signal dict -- handle missing tickers gracefully
+# Build signal dict
 signal = {}
 for t in ALL_TICKERS:
     row = snap[snap['ticker'] == t]
     if row.empty:
-        print(f'  WARNING: {t} missing from snapshot '
-              f'-- using z=0.0, hc=False')
+        print(f'  WARNING: {t} missing -- z=0.0 hc=False')
         signal[t] = {'ps_zscore': 0.0, 'hc': False}
     else:
-        z  = float(row['ps_zscore'].iloc[0])
-        hc = bool(row['high_conviction'].iloc[0])
-        signal[t] = {'ps_zscore': z, 'hc': hc}
+        signal[t] = {
+            'ps_zscore': float(row['ps_zscore'].iloc[0]),
+            'hc':        bool(row['high_conviction'].iloc[0]),
+        }
 
-# ── Signal tilt ───────────────────────────────────────────────
-def signal_tilt(z, hc):
-    if hc or z >= HC_THRESHOLD:
-        return 2.0
-    elif z >= 0.5:
-        return 1.2
-    elif z >= 0.0:
-        return 1.0
-    else:
-        return 0.8
+# ── Signal weights (published methodology) ────────────────────
+# HC = 1.5x share, non-HC = 1.0x share
+# Normalised within each book
+def compute_weights(tickers):
+    raw   = {t: (HC_MULTIPLIER if signal[t]['hc']
+                 else 1.0)
+             for t in tickers}
+    total = sum(raw.values())
+    return {t: v/total for t, v in raw.items()}
 
-# Compute tilted weights -- normalised within each book
-long_raw = {t: (1 / len(LONG_TICKERS)) *
-               signal_tilt(signal[t]['ps_zscore'],
-                           signal[t]['hc'])
-            for t in LONG_TICKERS}
-long_total   = sum(long_raw.values())
-long_weights = {t: v / long_total
-                for t, v in long_raw.items()}
-
-short_raw = {t: (1 / len(SHORT_TICKERS)) *
-                signal_tilt(signal[t]['ps_zscore'],
-                            signal[t]['hc'])
-             for t in SHORT_TICKERS}
-short_total   = sum(short_raw.values())
-short_weights = {t: v / short_total
-                 for t, v in short_raw.items()}
+long_weights  = compute_weights(LONG_TICKERS)
+short_weights = compute_weights(SHORT_TICKERS)
 
 ew_long  = 1.0 / len(LONG_TICKERS)
 ew_short = 1.0 / len(SHORT_TICKERS)
 
 print('Signal tilts:')
-print(f'{"Ticker":<6} {"Z":>6} {"HC":<4} '
-      f'{"Tilt":>6} {"SigWt":>7} {"BmWt":>7}')
-print('-' * 42)
+print(f'{"Ticker":<6} {"Z":>6} {"HC":<4}',
+      f'{"SigWt":>7} {"BmWt":>7}')
+print('-' * 36)
 for t in LONG_TICKERS:
-    z    = signal[t]['ps_zscore']
-    hc   = signal[t]['hc']
-    tilt = signal_tilt(z, hc)
-    print(f'{t:<6} {z:>6.2f} {"Y" if hc else "-":<4} '
-          f'{tilt:>6.1f}x {long_weights[t]:>6.1%} '
+    z  = signal[t]['ps_zscore']
+    hc = signal[t]['hc']
+    print(f'{t:<6} {z:>6.2f} {"Y" if hc else "-":<4}',
+          f'{long_weights[t]:>6.1%}',
           f'{ew_long:>6.1%}')
 for t in SHORT_TICKERS:
-    z    = signal[t]['ps_zscore']
-    hc   = signal[t]['hc']
-    tilt = signal_tilt(z, hc)
-    print(f'{t:<6} {z:>6.2f} {"Y" if hc else "-":<4} '
-          f'{tilt:>6.1f}x {short_weights[t]:>6.1%} '
+    z  = signal[t]['ps_zscore']
+    hc = signal[t]['hc']
+    print(f'{t:<6} {z:>6.2f} {"Y" if hc else "-":<4}',
+          f'{short_weights[t]:>6.1%}',
           f'{ew_short:>6.1%}')
 print()
 
-# ── Fetch current prices ──────────────────────────────────────
+# ── Fetch prices ──────────────────────────────────────────────
 def fetch_price(ticker, retries=3):
     for attempt in range(retries):
         try:
-            hist = yf.Ticker(ticker).history(period='5d')
-            if not hist.empty:
-                return round(float(
-                    hist['Close'].iloc[-1]), 4)
+            h = yf.Ticker(ticker).history(period='5d')
+            if not h.empty:
+                return round(float(h['Close'].iloc[-1]), 4)
         except Exception as e:
             if attempt < retries - 1:
                 time.sleep(2)
@@ -202,34 +155,34 @@ def fetch_price(ticker, retries=3):
 def fetch_gbpusd(retries=3):
     for attempt in range(retries):
         try:
-            hist = yf.Ticker('GBPUSD=X').history(period='5d')
-            if not hist.empty:
-                return round(float(
-                    hist['Close'].iloc[-1]), 4)
+            h = yf.Ticker('GBPUSD=X').history(period='5d')
+            if not h.empty:
+                return round(float(h['Close'].iloc[-1]), 4)
         except Exception as e:
             if attempt < retries - 1:
                 time.sleep(2)
-    return None
+    return 1.30
 
 print('Fetching prices...')
 prices = {}
 for t in ALL_TICKERS:
     prices[t] = fetch_price(t)
-    status = f'${prices[t]}' if prices[t] else 'FAILED'
-    print(f'  {t}: {status}')
+    print(f'  {t}: ${prices[t]}')
 
 gbpusd = fetch_gbpusd()
 print(f'  GBPUSD: {gbpusd}')
 print()
 
 # ── Compute P&L vs previous month ────────────────────────────
+# Uses stored sig_notional_usd and bm_notional_usd
+# from prior month positions (canonical notional values)
+# Converts USD P&L to GBP using prior month GBPUSD rate
 total_sig_pnl = 0.0
 total_bm_pnl  = 0.0
-perf_rows     = []
 
 if os.path.exists(POSITIONS_FILE):
-    pos_hist  = pd.read_csv(POSITIONS_FILE)
-    all_months = sorted(pos_hist['month'].unique())
+    pos_hist    = pd.read_csv(POSITIONS_FILE)
+    all_months  = sorted(pos_hist['month'].unique())
     prev_months = [m for m in all_months if m < MONTH]
 
     if prev_months:
@@ -238,60 +191,52 @@ if os.path.exists(POSITIONS_FILE):
             pos_hist['month'] == prev_month].copy()
 
         print(f'Computing P&L vs {prev_month}:')
-        print(f'{"Ticker":<6} {"Side":<6} '
-              f'{"Entry":>8} {"Exit":>8} '
+        print(f'{"Ticker":<6} {"Side":<6}',
+              f'{"Entry":>8} {"Exit":>8}',
               f'{"SigP&L":>10} {"BmP&L":>10}')
         print('-' * 55)
 
         for _, row in prev_pos.iterrows():
-            t        = row['ticker']
-            entry_p  = row.get('entry_price_usd')
-            exit_p   = prices.get(t)
-            sig_sh   = row.get('sig_shares')
-            bm_sh    = row.get('bm_shares')
-            side     = row['side']
+            t       = row['ticker']
+            entry_p = float(row['entry_price_usd'])
+            exit_p  = prices.get(t)
+            sig_n   = float(row['sig_notional_usd'])
+            bm_n    = float(row['bm_notional_usd'])
+            side    = row['side']
+            rate    = float(row['gbpusd'])
 
-            if not all([exit_p, entry_p, sig_sh, bm_sh]):
+            if exit_p is None:
+                print(f'  WARNING: no price for {t}')
                 continue
 
-            direction = -1 if side == 'short' else 1
-            sig_pnl   = direction * sig_sh * (exit_p - entry_p)
-            bm_pnl    = direction * bm_sh  * (exit_p - entry_p)
-            total_sig_pnl += sig_pnl
-            total_bm_pnl  += bm_pnl
+            if side == 'long':
+                ret = (exit_p - entry_p) / entry_p
+            else:
+                ret = (entry_p - exit_p) / entry_p
 
-            perf_rows.append({
-                'month':       MONTH,
-                'ticker':      t,
-                'side':        side,
-                'entry_price': entry_p,
-                'exit_price':  exit_p,
-                'sig_shares':  sig_sh,
-                'bm_shares':   bm_sh,
-                'sig_pnl_usd': round(sig_pnl, 2),
-                'bm_pnl_usd':  round(bm_pnl, 2),
-            })
+            s_pnl = ret * sig_n / rate
+            b_pnl = ret * bm_n  / rate
+            total_sig_pnl += s_pnl
+            total_bm_pnl  += b_pnl
 
-            print(f'{t:<6} {side:<6} '
-                  f'${entry_p:>7.2f} ${exit_p:>7.2f} '
-                  f'${sig_pnl:>+9,.0f} '
-                  f'${bm_pnl:>+9,.0f}')
+            print(f'{t:<6} {side:<6}',
+                  f'${entry_p:>7.2f} ${exit_p:>7.2f}',
+                  f'£{s_pnl:>+9,.0f} £{b_pnl:>+9,.0f}')
 
         sig_ret = round(
-            total_sig_pnl / STARTING_CAPITAL_USD * 100, 3)
+            total_sig_pnl / STARTING_CAPITAL_GBP * 100, 3)
         bm_ret  = round(
-            total_bm_pnl  / STARTING_CAPITAL_USD * 100, 3)
+            total_bm_pnl  / STARTING_CAPITAL_GBP * 100, 3)
         excess  = round(sig_ret - bm_ret, 3)
 
         print('-' * 55)
-        print(f'Signal P&L    : ${total_sig_pnl:>+,.0f} '
+        print(f'Signal P&L    : £{total_sig_pnl:>+,.0f}',
               f'({sig_ret:+.2f}%)')
-        print(f'Benchmark P&L : ${total_bm_pnl:>+,.0f} '
+        print(f'Benchmark P&L : £{total_bm_pnl:>+,.0f}',
               f'({bm_ret:+.2f}%)')
         print(f'Excess return : {excess:+.2f}%')
         print()
 
-        # Save performance record
         month_perf = pd.DataFrame([{
             'month':             MONTH,
             'prev_month':        prev_month,
@@ -313,12 +258,10 @@ if os.path.exists(POSITIONS_FILE):
         perf_hist.to_csv(PERF_FILE, index=False)
         print(f'Performance saved to {PERF_FILE}')
     else:
-        print('No previous month found -- '
-              'P&L will begin next month.')
+        print('No previous month -- P&L begins next month.')
         sig_ret = bm_ret = excess = 0.0
 else:
-    print('No position history found -- '
-          'this is the first rebalance.')
+    print('No position history -- first rebalance.')
     sig_ret = bm_ret = excess = 0.0
 
 # ── Build new month positions ─────────────────────────────────
@@ -327,48 +270,51 @@ new_positions = []
 for t in LONG_TICKERS:
     p  = prices[t]
     w  = long_weights[t]
-    n  = round(LONG_CAPITAL * w, 2)
-    en = round(LONG_CAPITAL * ew_long, 2)
+    n_gbp    = STARTING_CAPITAL_GBP * LONG_PCT * w
+    n_usd    = round(n_gbp * gbpusd, 2)
+    bm_n_gbp = STARTING_CAPITAL_GBP * LONG_PCT * ew_long
+    bm_n_usd = round(bm_n_gbp * gbpusd, 2)
     new_positions.append({
-        'month':             MONTH,
-        'ticker':            t,
-        'side':              'long',
-        'regime':            'positive',
-        'ps_zscore':         signal[t]['ps_zscore'],
-        'hc_flag':           signal[t]['hc'],
-        'sig_weight':        round(w, 4),
-        'sig_notional_usd':  n,
-        'sig_shares':        round(n / p, 4) if p else None,
-        'entry_price_usd':   p,
-        'bm_weight':         round(ew_long, 4),
-        'bm_notional_usd':   en,
-        'bm_shares':         round(en / p, 4) if p else None,
-        'gbpusd':            gbpusd,
+        'month':            MONTH,
+        'ticker':           t,
+        'side':             'long',
+        'regime':           'positive',
+        'ps_zscore':        signal[t]['ps_zscore'],
+        'hc_flag':          signal[t]['hc'],
+        'sig_weight':       round(w, 4),
+        'sig_notional_usd': n_usd,
+        'sig_shares':       round(n_usd/p, 4) if p else None,
+        'entry_price_usd':  p,
+        'bm_weight':        round(ew_long, 4),
+        'bm_notional_usd':  bm_n_usd,
+        'bm_shares':        round(bm_n_usd/p, 4) if p else None,
+        'gbpusd':           gbpusd,
     })
 
 for t in SHORT_TICKERS:
     p  = prices[t]
     w  = short_weights[t]
-    n  = round(SHORT_CAPITAL * w, 2)
-    en = round(SHORT_CAPITAL * ew_short, 2)
+    n_gbp    = STARTING_CAPITAL_GBP * SHORT_PCT * w
+    n_usd    = round(n_gbp * gbpusd, 2)
+    bm_n_gbp = STARTING_CAPITAL_GBP * SHORT_PCT * ew_short
+    bm_n_usd = round(bm_n_gbp * gbpusd, 2)
     new_positions.append({
-        'month':             MONTH,
-        'ticker':            t,
-        'side':              'short',
-        'regime':            'negative',
-        'ps_zscore':         signal[t]['ps_zscore'],
-        'hc_flag':           signal[t]['hc'],
-        'sig_weight':        round(w, 4),
-        'sig_notional_usd':  n,
-        'sig_shares':        round(n / p, 4) if p else None,
-        'entry_price_usd':   p,
-        'bm_weight':         round(ew_short, 4),
-        'bm_notional_usd':   en,
-        'bm_shares':         round(en / p, 4) if p else None,
-        'gbpusd':            gbpusd,
+        'month':            MONTH,
+        'ticker':           t,
+        'side':             'short',
+        'regime':           'negative',
+        'ps_zscore':        signal[t]['ps_zscore'],
+        'hc_flag':          signal[t]['hc'],
+        'sig_weight':       round(w, 4),
+        'sig_notional_usd': n_usd,
+        'sig_shares':       round(n_usd/p, 4) if p else None,
+        'entry_price_usd':  p,
+        'bm_weight':        round(ew_short, 4),
+        'bm_notional_usd':  bm_n_usd,
+        'bm_shares':        round(bm_n_usd/p, 4) if p else None,
+        'gbpusd':           gbpusd,
     })
 
-# Append new positions to history
 new_pos_df = pd.DataFrame(new_positions)
 if os.path.exists(POSITIONS_FILE):
     pos_hist = pd.read_csv(POSITIONS_FILE)
@@ -377,23 +323,20 @@ if os.path.exists(POSITIONS_FILE):
         [pos_hist, new_pos_df], ignore_index=True)
 else:
     pos_hist = new_pos_df
-
 pos_hist.to_csv(POSITIONS_FILE, index=False)
 
-# ── Print new positions ───────────────────────────────────────
 print()
 print(f'NEW POSITIONS -- {MONTH}:')
-print(f'{"Ticker":<6} {"Side":<6} {"SigWt":>6} '
-      f'{"Notional":>12} {"Shares":>10} {"Price":>8}')
-print('-' * 55)
+print(f'{"Ticker":<6} {"Side":<6} {"SigWt":>6}',
+      f'{"Notional GBP":>14} {"Shares":>10} {"Price":>8}')
+print('-' * 58)
 for _, row in new_pos_df.iterrows():
-    p_str = (f'${row["entry_price_usd"]:.2f}'
-             if row['entry_price_usd'] else 'n/a')
-    print(f'{row["ticker"]:<6} {row["side"]:<6} '
-          f'{row["sig_weight"]:>5.1%} '
-          f'${row["sig_notional_usd"]:>11,.0f} '
-          f'{row["sig_shares"]:>10.1f} '
-          f'{p_str:>8}')
+    n_gbp = row['sig_notional_usd'] / gbpusd
+    print(f'{row["ticker"]:<6} {row["side"]:<6}',
+          f'{row["sig_weight"]:>5.1%}',
+          f'£{n_gbp:>13,.0f}',
+          f'{row["sig_shares"]:>10.1f}',
+          f'${row["entry_price_usd"]:>7.2f}')
 
 print(f'\nPositions saved to {POSITIONS_FILE}')
 print()
